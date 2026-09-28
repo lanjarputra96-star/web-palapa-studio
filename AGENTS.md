@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep the public school website as a single scrolling homepage because its navigation is an overview of one institution.
+- Use only verified school facts from the reference site; avoid inventing names, dates, contact details, or service capabilities.
