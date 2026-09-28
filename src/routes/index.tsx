@@ -36,8 +36,8 @@ function Index() {
       <div className="bg-school-navy text-primary-foreground">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-6 gap-y-2 px-5 py-2.5 text-xs text-primary-foreground/70 sm:px-6">
           <span className="font-display font-semibold text-primary-foreground">SD NEGERI 1 PALAPA</span>
-          <span className="flex items-center gap-1.5"><Phone className="size-3.5" /> (021) 7889-4211</span>
-          <span className="flex items-center gap-1.5"><Mail className="size-3.5" /> SDN1Palapa@yahoo.co.id</span>
+          <a href="tel:02178894211" className="flex items-center gap-1.5 hover:text-primary-foreground"><Phone className="size-3.5" /> (021) 7889-4211</a>
+          <a href="mailto:SDN1Palapa@yahoo.co.id" className="flex items-center gap-1.5 hover:text-primary-foreground"><Mail className="size-3.5" /> SDN1Palapa@yahoo.co.id</a>
           <span className="ml-auto hidden items-center gap-1.5 md:flex"><Clock3 className="size-3.5" /> Senin–Jumat, 07.00–15.00 WIB</span>
         </div>
       </div>
@@ -108,7 +108,7 @@ function Index() {
           <p className="section-label">Kabar & informasi</p><h2 className="mt-2 text-3xl font-bold">Berita sekolah terkini</h2>
           <div className="mt-7 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
             <article className="overflow-hidden rounded-md border border-border bg-card"><img src={literasiSekolah} alt="Siswa membaca bersama di taman sekolah" loading="lazy" width={912} height={736} className="aspect-[16/9] w-full object-cover" /><div className="p-6"><p className="section-label">Berita · 01 September 2026</p><h3 className="mt-2 text-xl font-semibold">Tingkatkan minat baca, siswa kunjungi perpustakaan sekolah</h3><p className="mt-2 text-sm text-muted-foreground">Kegiatan literasi terjadwal membangun kebiasaan membaca sejak dini.</p></div></article>
-            <div className="grid gap-4">{[['09 September 2026','Evaluasi Perpanjangan KBM Daring hingga 10 September 2026'],['07 September 2026','Aktivitas Vulkanik Krakatau Berdampak pada Kegiatan Pembelajaran'],['09 September 2026','Pembelajaran Daring Dampak Abu Vulkanik Gunung Anak Krakatau']].map(([date,title]) => <article key={title} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3><button className="mt-4 inline-flex items-center text-xs font-bold text-primary">Baca selengkapnya <ChevronRight className="size-4" /></button></article>)}</div>
+            <div className="grid gap-4">{[['09 September 2026','Evaluasi Perpanjangan KBM Daring hingga 10 September 2026'],['07 September 2026','Aktivitas Vulkanik Krakatau Berdampak pada Kegiatan Pembelajaran'],['09 September 2026','Pembelajaran Daring Dampak Abu Vulkanik Gunung Anak Krakatau']].map(([date,title]) => <article key={title} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3><button onClick={() => goTo("#kontak")} className="mt-4 inline-flex items-center text-xs font-bold text-primary">Tanyakan ke sekolah <ChevronRight className="size-4" /></button></article>)}</div>
           </div>
         </section>
 
@@ -124,7 +124,30 @@ function Index() {
         <section id="spmb" className="scroll-mt-24 bg-school-navy text-primary-foreground"><div className="mx-auto grid max-w-[1180px] items-center gap-8 px-5 py-14 sm:px-6 md:grid-cols-[1.2fr_.8fr]"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Info SPMB</p><h2 className="mt-3 text-3xl font-bold">Siap menjadi bagian dari SD Negeri 1 Palapa?</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-primary-foreground/65">Hubungi sekolah untuk memperoleh informasi resmi mengenai penerimaan murid baru.</p></div><Button onClick={() => goTo("#kontak")} className="h-12 justify-self-start bg-primary px-7 text-primary-foreground hover:bg-primary/90 md:justify-self-end">Hubungi Sekolah <ArrowRight className="ml-2 size-4" /></Button></div></section>
       </main>
 
-      <footer id="kontak" className="scroll-mt-24 bg-background"><div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-5 py-10 sm:px-6 md:flex-row md:items-center md:justify-between"><div><p className="font-display font-bold">SD Negeri 1 Palapa</p><p className="mt-1 text-xs text-muted-foreground">NPSN 10807499 · Terakreditasi B</p></div><div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground"><span>(021) 7889-4211</span><span>SDN1Palapa@yahoo.co.id</span><span>Senin–Jumat, 07.00–15.00 WIB</span></div></div></footer>
+      <footer id="kontak" className="scroll-mt-24 bg-background">
+        <div className="mx-auto grid max-w-[1180px] gap-10 px-5 py-14 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
+          <div>
+            <p className="font-display text-lg font-bold">SD Negeri 1 Palapa</p>
+            <p className="mt-1 text-xs text-muted-foreground">NPSN 10807499 · Terakreditasi B</p>
+            <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">Beriman, sehat, dan berprestasi — bersama membangun generasi masa depan.</p>
+          </div>
+          <div>
+            <p className="section-label">Hubungi kami</p>
+            <ul className="mt-4 space-y-3 text-sm">
+              <li><a href="tel:02178894211" className="flex items-center gap-2 transition-colors hover:text-primary"><Phone className="size-4 text-primary" /> (021) 7889-4211</a></li>
+              <li><a href="mailto:SDN1Palapa@yahoo.co.id" className="flex items-center gap-2 break-all transition-colors hover:text-primary"><Mail className="size-4 shrink-0 text-primary" /> SDN1Palapa@yahoo.co.id</a></li>
+              <li className="flex items-center gap-2"><Clock3 className="size-4 text-primary" /> Senin–Jumat, 07.00–15.00 WIB</li>
+            </ul>
+          </div>
+          <div>
+            <p className="section-label">Jelajahi</p>
+            <ul className="mt-4 grid grid-cols-2 gap-2 text-sm">
+              {navItems.map(([label, target]) => <li key={target}><button onClick={() => goTo(target)} className="text-foreground/70 transition-colors hover:text-primary">{label}</button></li>)}
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-border"><p className="mx-auto max-w-[1180px] px-5 py-5 text-xs text-muted-foreground sm:px-6">© {new Date().getFullYear()} SD Negeri 1 Palapa. Seluruh hak dilindungi.</p></div>
+      </footer>
     </div>
   );
 }
