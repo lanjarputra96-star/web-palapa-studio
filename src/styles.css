@@ -164,6 +164,7 @@
 @utility hero-surface { background: var(--hero-gradient); }
 @utility shadow-soft { box-shadow: var(--shadow-soft); }
 @utility glass-panel { background: color-mix(in oklab, white 13%, transparent); backdrop-filter: blur(18px); }
+@utility section-label { font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: var(--color-primary); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
