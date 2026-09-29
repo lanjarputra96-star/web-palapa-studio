@@ -15,6 +15,13 @@
       "when": 1790575854745,
       "tag": "0001_drop_auth_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790648944279,
+      "tag": "0002_site_images_admin_policies",
+      "breakpoints": true
     }
   ]
 }
