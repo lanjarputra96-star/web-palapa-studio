@@ -111,7 +111,7 @@ function Index() {
         {c.layanan.visible && <section id="layanan" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <div className="flex items-end justify-between"><div><p className="section-label">{c.layanan.label}</p><h2 className="mt-2 text-3xl font-bold">{c.layanan.title}</h2></div><button onClick={() => goTo("#kontak")} className="hidden text-sm font-bold text-primary sm:block">Hubungi sekolah <ArrowRight className="ml-1 inline size-4" /></button></div>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
-            {c.layanan.items.map(({title,copy},i) => { const Icon = layananIcons[i % 3]; return <article key={i} className="rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p></article>; })}
+            {c.layanan.items.map(({title,copy},i) => { const Icon = layananIcons[i % 3]!; return <article key={i} className="rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p></article>; })}
           </div>
         </section>}
 
@@ -126,7 +126,7 @@ function Index() {
         {c.prestasi.visible && <section id="prestasi" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 py-20 sm:px-6">
           <p className="section-label">{c.prestasi.label}</p><h2 className="mt-2 text-3xl font-bold">{c.prestasi.title}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {c.prestasi.items.map((item,i) => <article key={i} className="overflow-hidden rounded-md border border-border bg-card"><img src={prestasiImgs[i % 3]} alt={item.title} loading="lazy" width={912} height={736} className="aspect-[16/10] w-full object-cover" /><div className="p-5"><p className="section-label">{item.label}</p><h3 className="mt-2 text-base font-semibold">{item.title}</h3></div></article>)}
+            {c.prestasi.items.map((item,i) => <article key={i} className="overflow-hidden rounded-md border border-border bg-card"><img src={prestasiImgs[i % 3]!} alt={item.title} loading="lazy" width={912} height={736} className="aspect-[16/10] w-full object-cover" /><div className="p-5"><p className="section-label">{item.label}</p><h3 className="mt-2 text-base font-semibold">{item.title}</h3></div></article>)}
           </div>
         </section>}
 
