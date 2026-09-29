@@ -1,5 +1,16 @@
 export const defaultContent = {
   topbar: { visible: true, phone: "(021) 7889-4211", email: "SDN1Palapa@yahoo.co.id", hours: "Senin–Jumat, 07.00–15.00 WIB" },
+  nav: {
+    items: [
+      { label: "Profil", target: "profil" },
+      { label: "Guru", target: "guru" },
+      { label: "Prestasi", target: "prestasi" },
+      { label: "Berita", target: "berita" },
+      { label: "Fasilitas", target: "fasilitas" },
+      { label: "Layanan", target: "layanan" },
+      { label: "Kontak", target: "kontak" },
+    ],
+  },
   header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", ctaLabel: "Info SPMB" },
   hero: {
     visible: true,
@@ -34,6 +45,14 @@ export const defaultContent = {
     body: "Kami berkomitmen menghadirkan pendidikan yang menumbuhkan keimanan, kesehatan, karakter, dan prestasi peserta didik. Bersama seluruh warga sekolah dan orang tua, mari kita wujudkan generasi yang siap menghadapi masa depan.",
     name: "Taufik Hidayat, S.Pd.",
     role: "Kepala Sekolah",
+    image: "",
+  },
+  guru: {
+    visible: true,
+    label: "Tenaga pendidik",
+    title: "Profil guru kami",
+    description: "Kenali para pendidik yang membimbing siswa SD Negeri 1 Palapa setiap hari.",
+    items: [{ name: "Taufik Hidayat, S.Pd.", role: "Kepala Sekolah", bio: "", image: "" }],
   },
   layanan: {
     visible: true,
@@ -52,6 +71,7 @@ export const defaultContent = {
     mainMeta: "Berita · 01 September 2026",
     mainTitle: "Tingkatkan minat baca, siswa kunjungi perpustakaan sekolah",
     mainCopy: "Kegiatan literasi terjadwal membangun kebiasaan membaca sejak dini.",
+    mainImage: "",
     items: [
       { date: "09 September 2026", title: "Evaluasi Perpanjangan KBM Daring hingga 10 September 2026" },
       { date: "07 September 2026", title: "Aktivitas Vulkanik Krakatau Berdampak pada Kegiatan Pembelajaran" },
@@ -63,9 +83,9 @@ export const defaultContent = {
     label: "Rekam jejak prestasi",
     title: "Ruang tumbuh, karya, dan pencapaian",
     items: [
-      { label: "Akademik", title: "Semangat berprestasi di bidang sains" },
-      { label: "Seni & budaya", title: "Merawat budaya melalui karya siswa" },
-      { label: "Literasi", title: "Membangun kebiasaan membaca bersama" },
+      { label: "Akademik", title: "Semangat berprestasi di bidang sains", image: "" },
+      { label: "Seni & budaya", title: "Merawat budaya melalui karya siswa", image: "" },
+      { label: "Literasi", title: "Membangun kebiasaan membaca bersama", image: "" },
     ],
   },
   fasilitas: {
@@ -93,7 +113,11 @@ export type SiteContent = typeof defaultContent;
 
 type Json = unknown;
 function merge(base: Json, over: Json): Json {
-  if (Array.isArray(base)) return Array.isArray(over) ? over : base;
+  if (Array.isArray(base)) {
+    if (!Array.isArray(over)) return base;
+    const tpl = base[0];
+    return tpl && typeof tpl === "object" ? over.map((x) => merge(Object.fromEntries(Object.keys(tpl).map((k) => [k, typeof (tpl as Record<string, Json>)[k] === "boolean" ? false : ""])), x)) : over;
+  }
   if (base && typeof base === "object") {
     const out: Record<string, Json> = { ...(base as Record<string, Json>) };
     if (over && typeof over === "object" && !Array.isArray(over)) {
