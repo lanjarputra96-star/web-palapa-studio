@@ -28,10 +28,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const navItems = [
-  ["Profil", "#profil"], ["Prestasi", "#prestasi"], ["Berita", "#berita"],
-  ["Fasilitas", "#fasilitas"], ["Layanan", "#layanan"], ["Kontak", "#kontak"],
-] as const;
 
 const goTo = (target: string) => document.querySelector(target)?.scrollIntoView({ behavior: "smooth" });
 
@@ -40,6 +36,7 @@ function Index() {
   const { data: c } = useSuspenseQuery(contentQuery);
   const tel = "tel:" + c.topbar.phone.replace(/[^0-9+]/g, "");
   const prestasiImgs = [prestasiSains, prestasiSeni, literasiSekolah];
+  const navItems = c.nav.items.map((n) => [n.label, "#" + n.target.replace(/^#/, "")] as const);
   const layananIcons = [BookOpen, Users, CalendarDays];
 
   return (
@@ -99,12 +96,23 @@ function Index() {
         {c.profil.visible && <section id="profil" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.profil.label}</p>
           <div className="mt-6 grid items-center gap-8 md:grid-cols-[300px_1fr] lg:gap-12">
-            <img src={kepalaSekolah} alt="Ilustrasi Kepala SD Negeri 1 Palapa" loading="lazy" width={640} height={760} className="aspect-[4/5] w-full rounded-md object-cover shadow-soft" />
+            <img src={c.profil.image || kepalaSekolah} alt="Ilustrasi Kepala SD Negeri 1 Palapa" loading="lazy" width={640} height={760} className="aspect-[4/5] w-full rounded-md object-cover shadow-soft" />
             <div className="rounded-md border border-border bg-card p-7 sm:p-9">
               <h2 className="text-2xl font-bold">{c.profil.title}</h2>
               <p className="mt-4 leading-7 text-foreground/70 whitespace-pre-line">{c.profil.body}</p>
               <p className="mt-6 font-display font-semibold">{c.profil.name}</p><p className="text-xs text-muted-foreground">{c.profil.role}</p>
             </div>
+          </div>
+        </section>}
+
+        {c.guru.visible && <section id="guru" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
+          <p className="section-label">{c.guru.label}</p><h2 className="mt-2 text-3xl font-bold">{c.guru.title}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{c.guru.description}</p>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {c.guru.items.map((g, i) => <article key={i} className="overflow-hidden rounded-md border border-border bg-card transition-transform hover:-translate-y-1">
+              {g.image ? <img src={g.image} alt={g.name} loading="lazy" className="aspect-[4/5] w-full object-cover" /> : <div className="grid aspect-[4/5] w-full place-items-center bg-primary/10 font-display text-4xl font-bold text-primary">{g.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}</div>}
+              <div className="p-5"><h3 className="font-display text-base font-semibold">{g.name}</h3><p className="text-xs font-semibold text-primary">{g.role}</p>{g.bio && <p className="mt-2 text-sm leading-6 text-muted-foreground">{g.bio}</p>}</div>
+            </article>)}
           </div>
         </section>}
 
@@ -118,7 +126,7 @@ function Index() {
         {c.berita.visible && <section id="berita" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.berita.label}</p><h2 className="mt-2 text-3xl font-bold">{c.berita.title}</h2>
           <div className="mt-7 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-            <article className="overflow-hidden rounded-md border border-border bg-card"><img src={literasiSekolah} alt="Siswa membaca bersama di taman sekolah" loading="lazy" width={912} height={736} className="aspect-[16/9] w-full object-cover" /><div className="p-6"><p className="section-label">{c.berita.mainMeta}</p><h3 className="mt-2 text-xl font-semibold">{c.berita.mainTitle}</h3><p className="mt-2 text-sm text-muted-foreground">{c.berita.mainCopy}</p></div></article>
+            <article className="overflow-hidden rounded-md border border-border bg-card"><img src={c.berita.mainImage || literasiSekolah} alt="Siswa membaca bersama di taman sekolah" loading="lazy" width={912} height={736} className="aspect-[16/9] w-full object-cover" /><div className="p-6"><p className="section-label">{c.berita.mainMeta}</p><h3 className="mt-2 text-xl font-semibold">{c.berita.mainTitle}</h3><p className="mt-2 text-sm text-muted-foreground">{c.berita.mainCopy}</p></div></article>
             <div className="grid gap-4">{c.berita.items.map(({date,title},i) => <article key={i} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3><button onClick={() => goTo("#kontak")} className="mt-4 inline-flex items-center text-xs font-bold text-primary">Tanyakan ke sekolah <ChevronRight className="size-4" /></button></article>)}</div>
           </div>
         </section>}
@@ -126,7 +134,7 @@ function Index() {
         {c.prestasi.visible && <section id="prestasi" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 py-20 sm:px-6">
           <p className="section-label">{c.prestasi.label}</p><h2 className="mt-2 text-3xl font-bold">{c.prestasi.title}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {c.prestasi.items.map((item,i) => <article key={i} className="overflow-hidden rounded-md border border-border bg-card"><img src={prestasiImgs[i % 3]!} alt={item.title} loading="lazy" width={912} height={736} className="aspect-[16/10] w-full object-cover" /><div className="p-5"><p className="section-label">{item.label}</p><h3 className="mt-2 text-base font-semibold">{item.title}</h3></div></article>)}
+            {c.prestasi.items.map((item,i) => <article key={i} className="overflow-hidden rounded-md border border-border bg-card"><img src={item.image || prestasiImgs[i % 3]!} alt={item.title} loading="lazy" width={912} height={736} className="aspect-[16/10] w-full object-cover" /><div className="p-5"><p className="section-label">{item.label}</p><h3 className="mt-2 text-base font-semibold">{item.title}</h3></div></article>)}
           </div>
         </section>}
 
@@ -157,7 +165,7 @@ function Index() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-border"><p className="mx-auto max-w-[1180px] px-5 py-5 text-xs text-muted-foreground sm:px-6">© {new Date().getFullYear()} {c.header.schoolName}. Seluruh hak dilindungi. · <a href="/auth" className="hover:text-primary">Admin</a></p></div>
+        <div className="border-t border-border"><p className="mx-auto max-w-[1180px] px-5 py-5 text-xs text-muted-foreground sm:px-6">© {new Date().getFullYear()} {c.header.schoolName}. Seluruh hak dilindungi. · <a href="/auth" className="hover:text-primary">Login Admin</a></p></div>
       </footer>}
     </div>
   );

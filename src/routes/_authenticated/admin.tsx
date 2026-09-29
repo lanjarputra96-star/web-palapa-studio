@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const sectionNames: Record<string, string> = {
-  topbar: "Bar kontak atas", header: "Kepala halaman", hero: "Bagian pembuka", stats: "Statistik",
+  nav: "Menu navigasi", guru: "Profil guru", topbar: "Bar kontak atas", header: "Kepala halaman", hero: "Bagian pembuka", stats: "Statistik",
   profil: "Profil / sambutan", layanan: "Layanan", berita: "Berita", prestasi: "Prestasi",
   fasilitas: "Fasilitas", spmb: "Info SPMB", footer: "Bagian bawah",
 };
@@ -31,7 +31,7 @@ const fieldNames: Record<string, string> = {
   schoolName: "Nama sekolah", subtitle: "Keterangan", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
   description: "Deskripsi", primaryCta: "Tombol utama", secondaryCta: "Tombol kedua", newsTitle: "Judul kartu kabar", newsMonth: "Bulan",
   news: "Daftar kabar", items: "Daftar", value: "Angka", label: "Label", body: "Isi", name: "Nama", role: "Jabatan", copy: "Keterangan",
-  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan",
+  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat",
 };
 
 type Val = unknown;
@@ -40,6 +40,8 @@ function Field({ k, value, onChange }: { k: string; value: Val; onChange: (v: Va
   const cls = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
   if (typeof value === "boolean")
     return <label className="flex items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--color-primary)]" />{name}</label>;
+  if (typeof value === "string" && /image$/i.test(k))
+    return <ImageField name={name} value={value} onChange={onChange} />;
   if (typeof value === "string")
     return <label className="block text-xs font-semibold text-muted-foreground">{name}
       {value.length > 70 ? <textarea rows={3} value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} />}
@@ -57,6 +59,26 @@ function Field({ k, value, onChange }: { k: string; value: Val; onChange: (v: Va
   }
   if (value && typeof value === "object") return <Obj value={value as Record<string, Val>} onChange={onChange} />;
   return null;
+}
+function ImageField({ name, value, onChange }: { name: string; value: string; onChange: (v: Val) => void }) {
+  const [busy, setBusy] = useState(false);
+  const upload = async (file: File) => {
+    setBusy(true);
+    const path = `${Date.now()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
+    const { error } = await supabase.storage.from("site-images").upload(path, file, { contentType: file.type });
+    setBusy(false);
+    if (error) return alert("Gagal mengunggah foto: " + error.message);
+    onChange(`/api/public/img/${path}`);
+  };
+  return <div><p className="text-xs font-semibold text-muted-foreground">{name}</p>
+    <div className="mt-2 flex items-center gap-3">
+      {value ? <img src={value} alt="" className="size-16 rounded-md object-cover" /> : <span className="grid size-16 place-items-center rounded-md bg-muted text-[10px] text-muted-foreground">Bawaan</span>}
+      <label className="cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold">
+        {busy ? "Mengunggah…" : "Unggah dari komputer"}
+        <input type="file" accept="image/*" className="hidden" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+      </label>
+      {value && <button type="button" onClick={() => onChange("")} className="text-xs font-semibold text-destructive">Hapus foto</button>}
+    </div></div>;
 }
 function Obj({ value, onChange }: { value: Record<string, Val>; onChange: (v: Val) => void }) {
   return <div className="space-y-3">{Object.entries(value).map(([k, v]) => <Field key={k} k={k} value={v} onChange={(nv) => onChange({ ...value, [k]: nv })} />)}</div>;
