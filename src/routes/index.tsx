@@ -119,15 +119,15 @@ function Index() {
         {c.layanan.visible && <section id="layanan" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <div className="flex items-end justify-between"><div><p className="section-label">{c.layanan.label}</p><h2 className="mt-2 text-3xl font-bold">{c.layanan.title}</h2></div><button onClick={() => goTo("#kontak")} className="hidden text-sm font-bold text-primary sm:block">Hubungi sekolah <ArrowRight className="ml-1 inline size-4" /></button></div>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
-            {c.layanan.items.map(({title,copy},i) => { const Icon = layananIcons[i % 3]!; return <article key={i} className="rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p></article>; })}
+            {c.layanan.items.map(({title,copy,buttonLabel,url},i) => { const Icon = layananIcons[i % 3]!; return <article key={i} className="flex flex-col rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>{url && <Button asChild className="mt-5 self-start"><a href={url} target="_blank" rel="noopener noreferrer">{buttonLabel || "Buka tautan"} <ArrowRight className="size-4" /></a></Button>}</article>; })}
           </div>
         </section>}
 
         {c.berita.visible && <section id="berita" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.berita.label}</p><h2 className="mt-2 text-3xl font-bold">{c.berita.title}</h2>
           <div className="mt-7 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-            <article className="overflow-hidden rounded-md border border-border bg-card"><img src={c.berita.mainImage || literasiSekolah} alt="Siswa membaca bersama di taman sekolah" loading="lazy" width={912} height={736} className="aspect-[16/9] w-full object-cover" /><div className="p-6"><p className="section-label">{c.berita.mainMeta}</p><h3 className="mt-2 text-xl font-semibold">{c.berita.mainTitle}</h3><p className="mt-2 text-sm text-muted-foreground">{c.berita.mainCopy}</p></div></article>
-            <div className="grid gap-4">{c.berita.items.map(({date,title},i) => <article key={i} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3><button onClick={() => goTo("#kontak")} className="mt-4 inline-flex items-center text-xs font-bold text-primary">Tanyakan ke sekolah <ChevronRight className="size-4" /></button></article>)}</div>
+            <article className="overflow-hidden rounded-md border border-border bg-card"><img src={c.berita.mainImage || literasiSekolah} alt="Siswa membaca bersama di taman sekolah" loading="lazy" width={912} height={736} className="aspect-[16/9] w-full object-cover" /><div className="p-6"><p className="section-label">{c.berita.mainMeta}</p><h3 className="mt-2 text-xl font-semibold">{c.berita.mainTitle}</h3><p className="mt-2 text-sm text-muted-foreground">{c.berita.mainCopy}</p><NewsExtra body={c.berita.mainBody} gallery={c.berita.mainGallery} /></div></article>
+            <div className="grid gap-4">{c.berita.items.map(({date,title,body,gallery},i) => <article key={i} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3>{body || gallery ? <NewsExtra body={body} gallery={gallery} /> : <button onClick={() => goTo("#kontak")} className="mt-4 inline-flex items-center text-xs font-bold text-primary">Tanyakan ke sekolah <ChevronRight className="size-4" /></button>}</article>)}</div>
           </div>
         </section>}
 
@@ -138,7 +138,7 @@ function Index() {
           </div>
         </section>}
 
-        {c.fasilitas.visible && <section id="fasilitas" className="scroll-mt-24 border-y border-border bg-card"><div className="mx-auto max-w-[1180px] px-5 py-16 sm:px-6"><p className="section-label">{c.fasilitas.label}</p><h2 className="mt-2 text-3xl font-bold">{c.fasilitas.title}</h2><div className="mt-8 grid gap-px overflow-hidden rounded-md bg-border sm:grid-cols-2 lg:grid-cols-4">{c.fasilitas.items.map(({title,copy},i) => <div key={i} className="bg-background p-6"><MapPin className="size-5 text-primary" /><h3 className="mt-5 text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p></div>)}</div></div></section>}
+        {c.fasilitas.visible && <section id="fasilitas" className="scroll-mt-24 border-y border-border bg-card"><div className="mx-auto max-w-[1180px] px-5 py-16 sm:px-6"><p className="section-label">{c.fasilitas.label}</p><h2 className="mt-2 text-3xl font-bold">{c.fasilitas.title}</h2><div className="mt-8 grid gap-px overflow-hidden rounded-md bg-border sm:grid-cols-2 lg:grid-cols-4">{c.fasilitas.items.map(({title,copy,gallery},i) => <div key={i} className="bg-background p-6"><MapPin className="size-5 text-primary" /><h3 className="mt-5 text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p><Gallery gallery={gallery} /></div>)}</div></div></section>}
 
         {c.spmb.visible && <section id="spmb" className="scroll-mt-24 bg-school-navy text-primary-foreground"><div className="mx-auto grid max-w-[1180px] items-center gap-8 px-5 py-14 sm:px-6 md:grid-cols-[1.2fr_.8fr]"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">{c.spmb.label}</p><h2 className="mt-3 text-3xl font-bold">{c.spmb.title}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-primary-foreground/65">{c.spmb.description}</p></div><Button onClick={() => goTo("#kontak")} className="h-12 justify-self-start bg-primary px-7 text-primary-foreground hover:bg-primary/90 md:justify-self-end">{c.spmb.cta} <ArrowRight className="ml-2 size-4" /></Button></div></section>}
       </main>
@@ -169,4 +169,20 @@ function Index() {
       </footer>}
     </div>
   );
+}
+
+function Gallery({ gallery }: { gallery: string }) {
+  const list = gallery.split("\n").filter(Boolean);
+  if (!list.length) return null;
+  return <div className="mt-4 grid grid-cols-3 gap-2">{list.map((u, i) => <a key={i} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" loading="lazy" className="aspect-square w-full rounded-md object-cover" /></a>)}</div>;
+}
+
+function NewsExtra({ body, gallery }: { body: string; gallery: string }) {
+  const [open, setOpen] = useState(false);
+  if (!body && !gallery) return null;
+  return <div>
+    {open && <div className="mt-4 whitespace-pre-line text-sm leading-7 text-foreground">{body}</div>}
+    {open && <Gallery gallery={gallery} />}
+    <button onClick={() => setOpen(!open)} className="mt-4 inline-flex items-center text-xs font-bold text-primary">{open ? "Tutup" : "Baca selengkapnya"} <ChevronRight className="size-4" /></button>
+  </div>;
 }
