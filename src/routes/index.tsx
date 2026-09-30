@@ -171,13 +171,13 @@ function Index() {
   );
 }
 
-function Gallery({ gallery = "" }: { gallery?: string }) {
+function Gallery({ gallery = "" }: { gallery?: string | undefined }) {
   const list = (gallery ?? "").split("\n").filter(Boolean);
   if (!list.length) return null;
   return <div className="mt-4 grid grid-cols-3 gap-2">{list.map((u, i) => <a key={i} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" loading="lazy" className="aspect-square w-full rounded-md object-cover" /></a>)}</div>;
 }
 
-function NewsExtra({ body = "", gallery = "" }: { body?: string; gallery?: string }) {
+function NewsExtra({ body = "", gallery = "" }: { body?: string | undefined; gallery?: string | undefined }) {
   const [open, setOpen] = useState(false);
   if (!body && !gallery) return null;
   return <div>
