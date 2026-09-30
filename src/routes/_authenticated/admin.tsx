@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { checkAdmin, getSiteContent, saveSiteContent } from "@/lib/content.functions";
-import type { SiteContent } from "@/lib/content";
+import { defaultContent, type SiteContent } from "@/lib/content";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +35,7 @@ const fieldNames: Record<string, string> = {
 };
 
 type Val = unknown;
-function Field({ k, value, onChange }: { k: string; value: Val; onChange: (v: Val) => void }) {
+function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (v: Val) => void; def?: Val }) {
   const name = fieldNames[k] ?? k;
   const cls = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
   if (typeof value === "boolean")
@@ -51,17 +51,20 @@ function Field({ k, value, onChange }: { k: string; value: Val; onChange: (v: Va
       {value.length > 70 ? <textarea rows={3} value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} />}
     </label>;
   if (Array.isArray(value)) {
-    const template = Object.fromEntries(Object.keys((value[0] as object) ?? {}).map((x) => [x, ""]));
+    const itemDef = (Array.isArray(def) ? def[0] : undefined) as Record<string, Val> | undefined;
+    const keys = new Set<string>(Object.keys(itemDef ?? {}));
+    value.forEach((it) => it && typeof it === "object" && Object.keys(it).forEach((x) => keys.add(x)));
+    const template = Object.fromEntries([...keys].map((x) => [x, typeof itemDef?.[x] === "boolean" ? false : ""]));
     return <div><p className="text-xs font-semibold text-muted-foreground">{name}</p>
       <div className="mt-2 space-y-3">
         {value.map((item, i) => <div key={i} className="rounded-md border border-border bg-muted/40 p-3">
-          <Obj value={item as Record<string, Val>} onChange={(v) => onChange(value.map((x, j) => (j === i ? v : x)))} />
+          <Obj value={{ ...template, ...(item as Record<string, Val>) }} def={itemDef} onChange={(v) => onChange(value.map((x, j) => (j === i ? v : x)))} />
           <button type="button" onClick={() => { if (confirm("Hapus item ini?")) onChange(value.filter((_, j) => j !== i)); }} className="mt-2 text-xs font-semibold text-destructive">Hapus item</button>
         </div>)}
         <button type="button" onClick={() => onChange([...value, template])} className="text-xs font-bold text-primary">+ Tambah item</button>
       </div></div>;
   }
-  if (value && typeof value === "object") return <Obj value={value as Record<string, Val>} onChange={onChange} />;
+  if (value && typeof value === "object") return <Obj value={value as Record<string, Val>} def={def} onChange={onChange} />;
   return null;
 }
 async function uploadImage(file: File) {
@@ -109,8 +112,9 @@ function ImageField({ name, value, onChange }: { name: string; value: string; on
       {value && <button type="button" onClick={() => onChange("")} className="text-xs font-semibold text-destructive">Hapus foto</button>}
     </div></div>;
 }
-function Obj({ value, onChange }: { value: Record<string, Val>; onChange: (v: Val) => void }) {
-  return <div className="space-y-3">{Object.entries(value).map(([k, v]) => <Field key={k} k={k} value={v} onChange={(nv) => onChange({ ...value, [k]: nv })} />)}</div>;
+function Obj({ value, onChange, def }: { value: Record<string, Val>; onChange: (v: Val) => void; def?: Val }) {
+  const d = (def && typeof def === "object" ? def : {}) as Record<string, Val>;
+  return <div className="space-y-3">{Object.entries(value).map(([k, v]) => <Field key={k} k={k} value={v} def={d[k]} onChange={(nv) => onChange({ ...value, [k]: nv })} />)}</div>;
 }
 
 function PasswordSettings() {
@@ -180,7 +184,7 @@ function AdminPage() {
               {sectionNames[key] ?? key}
               {"visible" in (section as object) && !(section as { visible: boolean }).visible && <span className="ml-2 text-xs font-normal text-muted-foreground">(disembunyikan)</span>}
             </summary>
-            <div className="mt-4"><Obj value={section as Record<string, Val>} onChange={(v) => { setContent({ ...content, [key]: v }); setStatus("Belum disimpan"); }} /></div>
+            <div className="mt-4"><Obj value={section as Record<string, Val>} def={(defaultContent as unknown as Record<string, Val>)[key]} onChange={(v) => { setContent({ ...content, [key]: v }); setStatus("Belum disimpan"); }} /></div>
           </details>
         ))}
       </main>
