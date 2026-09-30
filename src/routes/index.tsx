@@ -59,6 +59,7 @@ function Index() {
           <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigasi utama">
             {navItems.map(([label, target]) => <button key={target} onClick={() => goTo(target)} className="text-[13px] font-semibold text-foreground/65 transition-colors hover:text-primary">{label}</button>)}
           </nav>
+          <a href="/auth" className="hidden text-xs font-semibold text-muted-foreground hover:text-primary sm:inline">Login Admin</a>
           <Button onClick={() => goTo("#spmb")} className="hidden bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-secondary sm:inline-flex">{c.header.ctaLabel}</Button>
           <Button size="icon" aria-label={menuOpen ? "Tutup menu" : "Buka menu"} onClick={() => setMenuOpen((open) => !open)} className="ml-auto bg-muted text-foreground lg:hidden">{menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}</Button>
         </div>
