@@ -44,3 +44,16 @@ export const checkAdmin = createServerFn({ method: "POST" })
     if (error) throw error;
     return { isAdmin: true };
   });
+
+export const ADMIN_EMAIL = "admin@sdn1palapa.local";
+
+/** Creates the default admin account (admin / admin123) once, if it does not exist yet. */
+export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+  if (data?.users.some((u) => u.email === ADMIN_EMAIL)) return { ok: true };
+  const { data: created, error } = await supabaseAdmin.auth.admin.createUser({ email: ADMIN_EMAIL, password: "admin123", email_confirm: true });
+  if (error || !created.user) throw new Error(error?.message ?? "Gagal membuat admin");
+  await supabaseAdmin.from("user_roles").upsert({ user_id: created.user.id, role: "admin" }, { onConflict: "user_id,role" });
+  return { ok: true };
+});
