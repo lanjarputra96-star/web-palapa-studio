@@ -84,6 +84,31 @@ function Obj({ value, onChange }: { value: Record<string, Val>; onChange: (v: Va
   return <div className="space-y-3">{Object.entries(value).map(([k, v]) => <Field key={k} k={k} value={v} onChange={(nv) => onChange({ ...value, [k]: nv })} />)}</div>;
 }
 
+function PasswordSettings() {
+  const [cur, setCur] = useState("");
+  const [pw, setPw] = useState("");
+  const [msg, setMsg] = useState("");
+  const cls = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring";
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pw.length < 6) return setMsg("Kata sandi baru minimal 6 karakter.");
+    setMsg("Menyimpan…");
+    const { error } = await supabase.auth.updateUser({ password: pw, current_password: cur } as Parameters<typeof supabase.auth.updateUser>[0]);
+    if (error) setMsg("Gagal: periksa kata sandi lama Anda.");
+    else { setMsg("Kata sandi berhasil diganti ✓"); setCur(""); setPw(""); }
+  };
+  return (
+    <details className="rounded-md border border-border bg-card p-5">
+      <summary className="cursor-pointer font-display font-semibold">Pengaturan akun: ganti kata sandi</summary>
+      <form onSubmit={submit} className="mt-4 space-y-3">
+        <label className="block text-xs font-semibold text-muted-foreground">Kata sandi lama<input type="password" required value={cur} onChange={(e) => setCur(e.target.value)} className={cls} /></label>
+        <label className="block text-xs font-semibold text-muted-foreground">Kata sandi baru<input type="password" required value={pw} onChange={(e) => setPw(e.target.value)} className={cls} /></label>
+        <div className="flex items-center gap-3"><Button type="submit">Ganti kata sandi</Button><span className="text-xs text-muted-foreground">{msg}</span></div>
+      </form>
+    </details>
+  );
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const check = useServerFn(checkAdmin);
@@ -119,6 +144,7 @@ function AdminPage() {
         </div>
       </header>
       <main className="mx-auto max-w-4xl space-y-4 px-5 py-8">
+        <PasswordSettings />
         {!content ? <p className="text-sm text-muted-foreground">Memuat isi…</p> : Object.entries(content).map(([key, section]) => (
           <details key={key} className="rounded-md border border-border bg-card p-5" open={key === "hero"}>
             <summary className="cursor-pointer font-display font-semibold">
