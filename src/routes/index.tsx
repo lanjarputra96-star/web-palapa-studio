@@ -53,7 +53,9 @@ function Index() {
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1180px] items-center gap-8 px-5 py-3 sm:px-6">
           <button aria-label="Kembali ke atas" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3 text-left">
-            <span className="grid size-10 place-items-center rounded-md bg-primary/10 font-display text-base font-extrabold text-primary ring-1 ring-primary/20">P1</span>
+            {c.header.logo
+              ? <img src={c.header.logo} alt={`Logo ${c.header.schoolName}`} className="size-10 shrink-0 rounded-md object-contain" />
+              : <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary/10 font-display text-base font-extrabold text-primary ring-1 ring-primary/20">P1</span>}
             <span><strong className="block font-display text-sm sm:text-base">{c.header.schoolName}</strong><small className="block text-[10px] text-muted-foreground">{c.header.subtitle}</small></span>
           </button>
           <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigasi utama">

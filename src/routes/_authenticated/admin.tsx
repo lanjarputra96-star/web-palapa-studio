@@ -28,7 +28,7 @@ const sectionNames: Record<string, string> = {
 };
 const fieldNames: Record<string, string> = {
   visible: "Tampilkan bagian ini", newsVisible: "Tampilkan kartu kabar", phone: "Telepon", email: "Email", hours: "Jam layanan",
-  schoolName: "Nama sekolah", subtitle: "Keterangan", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
+  schoolName: "Nama sekolah", subtitle: "Keterangan", logo: "Logo sekolah", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
   description: "Deskripsi", primaryCta: "Tombol utama", secondaryCta: "Tombol kedua", newsTitle: "Judul kartu kabar", newsMonth: "Bulan",
   news: "Daftar kabar", items: "Daftar", value: "Angka", label: "Label", body: "Isi", name: "Nama", role: "Jabatan", copy: "Keterangan",
   date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat", mainBody: "Berita utama: isi lengkap", gallery: "Galeri foto", mainGallery: "Berita utama: galeri foto", buttonLabel: "Teks tombol", url: "Link tujuan tombol (https://...)",
@@ -44,7 +44,7 @@ function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (
     return <GalleryField name={name} value={value} onChange={onChange} />;
   if (typeof value === "string" && /body$/i.test(k))
     return <label className="block text-xs font-semibold text-muted-foreground">{name}<textarea rows={10} value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} /></label>;
-  if (typeof value === "string" && /image$/i.test(k))
+  if (typeof value === "string" && (/image$/i.test(k) || k === "logo"))
     return <ImageField name={name} value={value} onChange={onChange} />;
   if (typeof value === "string")
     return <label className="block text-xs font-semibold text-muted-foreground">{name}

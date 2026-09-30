@@ -11,7 +11,7 @@ export const defaultContent = {
       { label: "Kontak", target: "kontak" },
     ],
   },
-  header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", ctaLabel: "Info SPMB" },
+  header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", logo: "", ctaLabel: "Info SPMB" },
   hero: {
     visible: true,
     badge: "Membangun generasi Berhatti",
