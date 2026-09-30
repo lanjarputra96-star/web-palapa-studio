@@ -31,7 +31,7 @@ const fieldNames: Record<string, string> = {
   schoolName: "Nama sekolah", subtitle: "Keterangan", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
   description: "Deskripsi", primaryCta: "Tombol utama", secondaryCta: "Tombol kedua", newsTitle: "Judul kartu kabar", newsMonth: "Bulan",
   news: "Daftar kabar", items: "Daftar", value: "Angka", label: "Label", body: "Isi", name: "Nama", role: "Jabatan", copy: "Keterangan",
-  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat",
+  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat", mainBody: "Berita utama: isi lengkap", gallery: "Galeri foto", mainGallery: "Berita utama: galeri foto", buttonLabel: "Teks tombol", url: "Link tujuan tombol (https://...)",
 };
 
 type Val = unknown;
@@ -40,6 +40,10 @@ function Field({ k, value, onChange }: { k: string; value: Val; onChange: (v: Va
   const cls = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
   if (typeof value === "boolean")
     return <label className="flex items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--color-primary)]" />{name}</label>;
+  if (typeof value === "string" && /gallery$/i.test(k))
+    return <GalleryField name={name} value={value} onChange={onChange} />;
+  if (typeof value === "string" && /body$/i.test(k))
+    return <label className="block text-xs font-semibold text-muted-foreground">{name}<textarea rows={10} value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} /></label>;
   if (typeof value === "string" && /image$/i.test(k))
     return <ImageField name={name} value={value} onChange={onChange} />;
   if (typeof value === "string")
@@ -59,6 +63,31 @@ function Field({ k, value, onChange }: { k: string; value: Val; onChange: (v: Va
   }
   if (value && typeof value === "object") return <Obj value={value as Record<string, Val>} onChange={onChange} />;
   return null;
+}
+async function uploadImage(file: File) {
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${file.name.replace(/[^\w.\-]/g, "_")}`;
+  const { error } = await supabase.storage.from("site-images").upload(path, file, { contentType: file.type });
+  if (error) throw error;
+  return `/api/public/img/${path}`;
+}
+function GalleryField({ name, value, onChange }: { name: string; value: string; onChange: (v: Val) => void }) {
+  const [busy, setBusy] = useState(false);
+  const list = value.split("\n").filter(Boolean);
+  const add = async (files: File[]) => {
+    setBusy(true);
+    try { const urls = []; for (const f of files) urls.push(await uploadImage(f)); onChange([...list, ...urls].join("\n")); }
+    catch (e) { alert("Gagal mengunggah foto: " + (e as Error).message); }
+    setBusy(false);
+  };
+  return <div><p className="text-xs font-semibold text-muted-foreground">{name}</p>
+    <div className="mt-2 flex flex-wrap items-center gap-3">
+      {list.map((u, i) => <div key={i} className="relative"><img src={u} alt="" className="size-16 rounded-md object-cover" />
+        <button type="button" onClick={() => onChange(list.filter((_, j) => j !== i).join("\n"))} className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-destructive text-[10px] text-destructive-foreground">✕</button></div>)}
+      <label className="cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold">
+        {busy ? "Mengunggah…" : "+ Tambah foto (bisa pilih banyak)"}
+        <input type="file" accept="image/*" multiple className="hidden" disabled={busy} onChange={(e) => { const f = Array.from(e.target.files ?? []); if (f.length) add(f); e.target.value = ""; }} />
+      </label>
+    </div></div>;
 }
 function ImageField({ name, value, onChange }: { name: string; value: string; onChange: (v: Val) => void }) {
   const [busy, setBusy] = useState(false);
