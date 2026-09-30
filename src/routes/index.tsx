@@ -171,9 +171,10 @@ function Index() {
   );
 }
 
-function Gallery({ gallery = "" }: { gallery?: string | undefined }) {
+function Gallery({ gallery = "", large = false }: { gallery?: string | undefined; large?: boolean }) {
   const list = (gallery ?? "").split("\n").filter(Boolean);
   if (!list.length) return null;
+  if (large) return <div className="mt-5 grid gap-3">{list.map((u, i) => <a key={i} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-md object-cover" /></a>)}</div>;
   return <div className="mt-4 grid grid-cols-3 gap-2">{list.map((u, i) => <a key={i} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" loading="lazy" className="aspect-square w-full rounded-md object-cover" /></a>)}</div>;
 }
 
