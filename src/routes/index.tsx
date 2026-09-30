@@ -3,7 +3,7 @@ import { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getSiteContent } from "@/lib/content.functions";
 import { ArrowRight, BookOpen, CalendarDays, ChevronRight, Clock3, Mail, MapPin, Menu, Phone, Trophy, Users, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import kepalaSekolah from "@/assets/kepala-sekolah-ilustrasi.jpg";
 import prestasiSains from "@/assets/prestasi-sains.jpg";
 import prestasiSeni from "@/assets/prestasi-seni.jpg";
@@ -119,7 +119,7 @@ function Index() {
         {c.layanan.visible && <section id="layanan" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <div className="flex items-end justify-between"><div><p className="section-label">{c.layanan.label}</p><h2 className="mt-2 text-3xl font-bold">{c.layanan.title}</h2></div><button onClick={() => goTo("#kontak")} className="hidden text-sm font-bold text-primary sm:block">Hubungi sekolah <ArrowRight className="ml-1 inline size-4" /></button></div>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
-            {c.layanan.items.map(({title,copy,buttonLabel,url},i) => { const Icon = layananIcons[i % 3]!; return <article key={i} className="flex flex-col rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>{url && <Button asChild className="mt-5 self-start"><a href={url} target="_blank" rel="noopener noreferrer">{buttonLabel || "Buka tautan"} <ArrowRight className="size-4" /></a></Button>}</article>; })}
+            {c.layanan.items.map(({title,copy,buttonLabel,url},i) => { const Icon = layananIcons[i % 3]!; return <article key={i} className="flex flex-col rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>{url && <a href={url} className={buttonVariants({ className: "mt-5 self-start" })} target="_blank" rel="noopener noreferrer">{buttonLabel || "Buka tautan"} <ArrowRight className="size-4" /></a>}</article>; })}
           </div>
         </section>}
 
