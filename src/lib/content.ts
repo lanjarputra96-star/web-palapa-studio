@@ -59,7 +59,7 @@ export const defaultContent = {
     label: "Akses cepat",
     title: "Layanan & referensi",
     items: [
-      { title: "Referensi Belajar", copy: "Tautan materi dan sumber belajar untuk mendukung kegiatan siswa." },
+      { title: "Referensi Belajar", copy: "Tautan materi dan sumber belajar untuk mendukung kegiatan siswa.", buttonLabel: "", url: "" },
       { title: "Informasi Pendidik", copy: "Kenali tenaga pendidik dan kependidikan SD Negeri 1 Palapa." },
       { title: "Kalender Sekolah", copy: "Ikuti jadwal kegiatan akademik dan agenda penting sekolah." },
     ],
@@ -72,8 +72,10 @@ export const defaultContent = {
     mainTitle: "Tingkatkan minat baca, siswa kunjungi perpustakaan sekolah",
     mainCopy: "Kegiatan literasi terjadwal membangun kebiasaan membaca sejak dini.",
     mainImage: "",
+    mainBody: "",
+    mainGallery: "",
     items: [
-      { date: "09 September 2026", title: "Evaluasi Perpanjangan KBM Daring hingga 10 September 2026" },
+      { date: "09 September 2026", title: "Evaluasi Perpanjangan KBM Daring hingga 10 September 2026", body: "", gallery: "" },
       { date: "07 September 2026", title: "Aktivitas Vulkanik Krakatau Berdampak pada Kegiatan Pembelajaran" },
       { date: "09 September 2026", title: "Pembelajaran Daring Dampak Abu Vulkanik Gunung Anak Krakatau" },
     ],
@@ -93,7 +95,7 @@ export const defaultContent = {
     label: "Sarana & prasarana",
     title: "Fasilitas pendukung pembelajaran",
     items: [
-      { title: "Ruang kelas", copy: "Ruang belajar yang nyaman" },
+      { title: "Ruang kelas", copy: "Ruang belajar yang nyaman", gallery: "" },
       { title: "Perpustakaan", copy: "Kunjungan siswa aktif terjadwal" },
       { title: "Lapangan olahraga", copy: "Basket, futsal, badminton, dan voli" },
       { title: "Musholah", copy: "Pusat ibadah dan kegiatan keagamaan" },
