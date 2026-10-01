@@ -75,7 +75,7 @@ async function toBase64(file: File): Promise<{ mime: string; data: string }> {
   const png = file.type === "image/png" && file.size < 300_000;
   let q = 0.85, url = canvas.toDataURL(png ? "image/png" : "image/jpeg", q);
   while (!png && url.length > 1_300_000 && q > 0.4) { q -= 0.15; url = canvas.toDataURL("image/jpeg", q); }
-  return { mime: png ? "image/png" : "image/jpeg", data: url.split(",")[1] };
+  return { mime: png ? "image/png" : "image/jpeg", data: url.split(",")[1] ?? "" };
 }
 async function uploadImage(file: File) {
   const { url } = await uploadImageFn({ data: await toBase64(file) });
