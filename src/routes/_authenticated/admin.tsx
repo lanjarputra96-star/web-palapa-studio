@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { checkAdmin, getSiteContent, saveSiteContent } from "@/lib/content.functions";
+import { adminLogout, changePassword, getSiteContent, saveSiteContent, uploadImage as uploadImageFn } from "@/lib/content.functions";
 import { defaultContent, type SiteContent } from "@/lib/content";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -67,11 +66,20 @@ function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (
   if (value && typeof value === "object") return <Obj value={value as Record<string, Val>} def={def} onChange={onChange} />;
   return null;
 }
+async function toBase64(file: File): Promise<{ mime: string; data: string }> {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale);
+  canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  const png = file.type === "image/png" && file.size < 300_000;
+  let q = 0.85, url = canvas.toDataURL(png ? "image/png" : "image/jpeg", q);
+  while (!png && url.length > 1_300_000 && q > 0.4) { q -= 0.15; url = canvas.toDataURL("image/jpeg", q); }
+  return { mime: png ? "image/png" : "image/jpeg", data: url.split(",")[1] };
+}
 async function uploadImage(file: File) {
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${file.name.replace(/[^\w.\-]/g, "_")}`;
-  const { error } = await supabase.storage.from("site-images").upload(path, file, { contentType: file.type });
-  if (error) throw error;
-  return `/api/public/img/${path}`;
+  const { url } = await uploadImageFn({ data: await toBase64(file) });
+  return url;
 }
 function GalleryField({ name, value, onChange }: { name: string; value: string; onChange: (v: Val) => void }) {
   const [busy, setBusy] = useState(false);
@@ -96,11 +104,8 @@ function ImageField({ name, value, onChange }: { name: string; value: string; on
   const [busy, setBusy] = useState(false);
   const upload = async (file: File) => {
     setBusy(true);
-    const path = `${Date.now()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
-    const { error } = await supabase.storage.from("site-images").upload(path, file, { contentType: file.type });
+    try { onChange(await uploadImage(file)); } catch (e) { alert("Gagal mengunggah foto: " + (e as Error).message); }
     setBusy(false);
-    if (error) return alert("Gagal mengunggah foto: " + error.message);
-    onChange(`/api/public/img/${path}`);
   };
   return <div><p className="text-xs font-semibold text-muted-foreground">{name}</p>
     <div className="mt-2 flex items-center gap-3">
@@ -126,8 +131,8 @@ function PasswordSettings() {
     e.preventDefault();
     if (pw.length < 6) return setMsg("Kata sandi baru minimal 6 karakter.");
     setMsg("Menyimpan…");
-    const { error } = await supabase.auth.updateUser({ password: pw, current_password: cur } as Parameters<typeof supabase.auth.updateUser>[0]);
-    if (error) setMsg("Gagal: periksa kata sandi lama Anda.");
+    const r = await changePassword({ data: { current: cur, next: pw } }).catch(() => ({ ok: false }));
+    if (!r.ok) setMsg("Gagal: periksa kata sandi lama Anda.");
     else { setMsg("Kata sandi berhasil diganti ✓"); setCur(""); setPw(""); }
   };
   return (
@@ -144,7 +149,7 @@ function PasswordSettings() {
 
 function AdminPage() {
   const navigate = useNavigate();
-  const check = useServerFn(checkAdmin);
+  const logout = useServerFn(adminLogout);
   const load = useServerFn(getSiteContent);
   const save = useServerFn(saveSiteContent);
   const [admin, setAdmin] = useState<boolean | null>(null);
@@ -152,10 +157,10 @@ function AdminPage() {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    check().then((r) => { setAdmin(r.isAdmin); if (r.isAdmin) load().then(setContent); }).catch(() => setAdmin(false));
+    setAdmin(true); load().then(setContent);
   }, []);
 
-  const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth", replace: true }); };
+  const signOut = async () => { await logout(); navigate({ to: "/auth", replace: true }); };
   const onSave = async () => {
     if (!content) return;
     setStatus("Menyimpan…");

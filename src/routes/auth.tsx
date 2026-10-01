@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { ensureDefaultAdmin, ADMIN_EMAIL } from "@/lib/content.functions";
+import { adminLogin } from "@/lib/content.functions";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/auth")({
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const ensure = useServerFn(ensureDefaultAdmin);
+  const login = useServerFn(adminLogin);
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -32,13 +31,15 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     setMsg(null);
-    const name = user.trim().toLowerCase();
-    const email = name === "admin" ? ADMIN_EMAIL : name;
-    if (name === "admin") { try { await ensure(); } catch { /* lanjut coba masuk */ } }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) setMsg("Nama pengguna atau kata sandi salah.");
-    else navigate({ to: "/admin" });
+    try {
+      const r = await login({ data: { username: user, password } });
+      setBusy(false);
+      if (!r.ok) setMsg("Nama pengguna atau kata sandi salah.");
+      else navigate({ to: "/admin" });
+    } catch {
+      setBusy(false);
+      setMsg("Tidak dapat terhubung ke database. Periksa pengaturan Cloudflare.");
+    }
   };
 
   const input = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring";

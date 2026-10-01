@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 import { defaultContent, mergeContent } from "./content";
 import { d1Query } from "./d1.server";
+import { createSession, currentAdmin, destroySession, newImageId, requireAdmin, setPassword, verifyPassword, ensureTables } from "./auth.server";
 
 export const getSiteContent = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -14,14 +15,12 @@ export const getSiteContent = createServerFn({ method: "GET" }).handler(async ()
 });
 
 export const saveSiteContent = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => {
     if (!data || typeof data !== "object") throw new Error("Invalid content");
     return data as Record<string, unknown>;
   })
-  .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
+  .handler(async ({ data }) => {
+    await requireAdmin();
     const content = mergeContent(data);
     await d1Query("CREATE TABLE IF NOT EXISTS site_content (id TEXT PRIMARY KEY, data TEXT NOT NULL, updated_at TEXT)");
     await d1Query(
@@ -31,29 +30,39 @@ export const saveSiteContent = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Returns whether the caller is admin; the very first account to call this becomes admin. */
-export const checkAdmin = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (isAdmin) return { isAdmin: true };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { count } = await supabaseAdmin.from("user_roles").select("id", { count: "exact", head: true }).eq("role", "admin");
-    if ((count ?? 0) > 0) return { isAdmin: false };
-    const { error } = await supabaseAdmin.from("user_roles").insert({ user_id: context.userId, role: "admin" });
-    if (error) throw error;
-    return { isAdmin: true };
+export const adminLogin = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ username: z.string().min(1).max(100), password: z.string().min(1).max(200) }).parse(d))
+  .handler(async ({ data }) => {
+    const username = data.username.trim().toLowerCase();
+    if (!(await verifyPassword(username, data.password))) return { ok: false };
+    await createSession(username);
+    return { ok: true };
   });
 
-export const ADMIN_EMAIL = "admin@sdn1palapa.local";
+export const adminMe = createServerFn({ method: "POST" }).handler(async () => {
+  try { return { username: await currentAdmin() }; } catch (e) { console.error(e); return { username: null }; }
+});
 
-/** Creates the default admin account (admin / admin123) once, if it does not exist yet. */
-export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-  if (data?.users.some((u) => u.email === ADMIN_EMAIL)) return { ok: true };
-  const { data: created, error } = await supabaseAdmin.auth.admin.createUser({ email: ADMIN_EMAIL, password: "admin123", email_confirm: true });
-  if (error || !created.user) throw new Error(error?.message ?? "Gagal membuat admin");
-  await supabaseAdmin.from("user_roles").upsert({ user_id: created.user.id, role: "admin" }, { onConflict: "user_id,role" });
+export const adminLogout = createServerFn({ method: "POST" }).handler(async () => {
+  await destroySession();
   return { ok: true };
 });
+
+export const changePassword = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ current: z.string().min(1).max(200), next: z.string().min(6).max(200) }).parse(d))
+  .handler(async ({ data }) => {
+    const u = await requireAdmin();
+    if (!(await verifyPassword(u, data.current))) return { ok: false };
+    await setPassword(u, data.next);
+    return { ok: true };
+  });
+
+export const uploadImage = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ mime: z.string().regex(/^image\/[\w.+-]+$/), data: z.string().max(1_400_000) }).parse(d))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    await ensureTables();
+    const id = newImageId();
+    await d1Query("INSERT INTO site_images (id, mime, data) VALUES (?, ?, ?)", [id, data.mime, data.data]);
+    return { url: `/api/public/img/${id}` };
+  });
