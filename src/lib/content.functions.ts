@@ -34,9 +34,14 @@ export const adminLogin = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ username: z.string().min(1).max(100), password: z.string().min(1).max(200) }).parse(d))
   .handler(async ({ data }) => {
     const username = data.username.trim().toLowerCase();
-    if (!(await verifyPassword(username, data.password))) return { ok: false };
-    await createSession(username);
-    return { ok: true };
+    try {
+      if (!(await verifyPassword(username, data.password))) return { ok: false, error: null as string | null };
+      await createSession(username);
+      return { ok: true, error: null as string | null };
+    } catch (e) {
+      console.error(e);
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
   });
 
 export const adminMe = createServerFn({ method: "POST" }).handler(async () => {
