@@ -34,7 +34,7 @@ function AuthPage() {
     try {
       const r = await login({ data: { username: user, password } });
       setBusy(false);
-      if (!r.ok) setMsg("Nama pengguna atau kata sandi salah.");
+      if (!r.ok) setMsg(r.error ? `Database bermasalah: ${r.error}` : "Nama pengguna atau kata sandi salah.");
       else navigate({ to: "/admin" });
     } catch {
       setBusy(false);
