@@ -5,12 +5,24 @@
 type D1Like = { prepare: (sql: string) => { bind: (...p: unknown[]) => { all: () => Promise<{ results: unknown[] }> } } };
 
 async function workerEnv(): Promise<Record<string, unknown>> {
+  // Server Cloudflare menyimpan env Worker (termasuk binding DB) di globalThis.__env__ pada setiap permintaan.
+  const g = (globalThis as { __env__?: Record<string, unknown> }).__env__;
+  if (g && typeof g === "object" && Object.keys(g).length) return g;
   try {
     const mod = (await import(/* @vite-ignore */ "cloudflare:" + "workers")) as { env?: Record<string, unknown> };
     return mod.env ?? {};
   } catch {
     return {};
   }
+}
+
+export async function d1Source(): Promise<string> {
+  const wenv = await workerEnv();
+  const db = wenv["DB"] as D1Like | undefined;
+  if (db && typeof db.prepare === "function") return "binding-DB";
+  if (wenv["CLOUDFLARE_API_TOKEN"] || process.env["CLOUDFLARE_API_TOKEN"]) return "api-token";
+  if (process.env["LOVABLE_API_KEY"] && process.env["CLOUDFLARE_API_KEY"]) return "lovable";
+  return "none";
 }
 
 export async function d1Query<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
