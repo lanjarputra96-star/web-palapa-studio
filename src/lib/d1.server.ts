@@ -36,7 +36,7 @@ export async function d1Query<T = Record<string, unknown>>(sql: string, params: 
   }
 
   const accountId = get("CLOUDFLARE_ACCOUNT_ID") || "c29c172f6c6488512065c8efbd4fadc4";
-  const databaseId = get("D1_DATABASE_ID") || "2c0a5bb3-d64c-4491-9f9f-d5c389aabbcd";
+  const databaseId = get("D1_DATABASE_ID") || "59695628-3090-429d-9353-2e53269e0b22";
   const path = `/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
   const ownToken = get("CLOUDFLARE_API_TOKEN");
   let url: string;
