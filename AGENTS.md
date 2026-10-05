@@ -11,3 +11,4 @@
 
 - Keep the public school website as a single scrolling homepage because its navigation is an overview of one institution.
 - Use only verified school facts from the reference site; avoid inventing names, dates, contact details, or service capabilities.
+- Standalone Cloudflare deploys get the D1 database through the `DB` binding declared in root wrangler.jsonc (merged into the build output), so the binding survives every Git deploy.
