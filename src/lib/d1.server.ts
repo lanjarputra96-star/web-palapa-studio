@@ -20,8 +20,8 @@ export async function d1Source(): Promise<string> {
   const wenv = await workerEnv();
   const db = wenv["DB"] as D1Like | undefined;
   if (db && typeof db.prepare === "function") return "binding-DB";
-  if (wenv["CLOUDFLARE_API_TOKEN"] || process.env.CLOUDFLARE_API_TOKEN) return "api-token";
-  if (process.env.LOVABLE_API_KEY && process.env.CLOUDFLARE_API_KEY) return "lovable";
+  if (wenv["CLOUDFLARE_API_TOKEN"] || process.env["CLOUDFLARE_API_TOKEN"]) return "api-token";
+  if (process.env["LOVABLE_API_KEY"] && process.env["CLOUDFLARE_API_KEY"]) return "lovable";
   return "none";
 }
 
