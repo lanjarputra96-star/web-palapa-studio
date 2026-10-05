@@ -1,13 +1,13 @@
 // Dipakai saat website dipasang sendiri di Cloudflare (ditarik dari GitHub).
-// Menyambungkan database D1 "sdn1palapa-content" sebagai binding bernama DB,
+// Menyambungkan database D1 "db" sebagai binding bernama DB,
 // supaya sambungan database tidak hilang setiap kali ada deploy baru.
 {
   "keep_vars": true,
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "sdn1palapa-content",
-      "database_id": "2c0a5bb3-d64c-4491-9f9f-d5c389aabbcd"
+      "database_name": "db",
+      "database_id": "59695628-3090-429d-9353-2e53269e0b22"
     }
   ]
 }
