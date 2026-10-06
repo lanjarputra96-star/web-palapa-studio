@@ -11,7 +11,7 @@ export const defaultContent = {
       { label: "Kontak", target: "kontak" },
     ],
   },
-  header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", logo: "", ctaLabel: "Info SPMB" },
+  header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", logo: "", coverImage: "", ctaLabel: "Info SPMB" },
   hero: {
     visible: true,
     badge: "Membangun generasi Berhatti",
@@ -52,6 +52,8 @@ export const defaultContent = {
     label: "Tenaga pendidik",
     title: "Profil guru kami",
     description: "Kenali para pendidik yang membimbing siswa SD Negeri 1 Palapa setiap hari.",
+    layout: "grid",
+    photoSize: "sedang",
     items: [{ name: "Taufik Hidayat, S.Pd.", role: "Kepala Sekolah", bio: "", image: "" }],
   },
   layanan: {
@@ -107,6 +109,12 @@ export const defaultContent = {
     title: "Siap menjadi bagian dari SD Negeri 1 Palapa?",
     description: "Hubungi sekolah untuk memperoleh informasi resmi mengenai penerimaan murid baru.",
     cta: "Hubungi Sekolah",
+  },
+  susunan: {
+    items: ["profil", "guru", "layanan", "berita", "prestasi", "fasilitas", "spmb"].map((section) => ({ section })),
+  },
+  custom: {
+    items: [{ visible: false, id: "visi-misi", label: "Tentang kami", title: "Visi & Misi", body: "", image: "", gallery: "" }],
   },
   footer: { visible: true, tagline: "Beriman, sehat, dan berprestasi — bersama membangun generasi masa depan." },
 };

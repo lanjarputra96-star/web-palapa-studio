@@ -23,22 +23,28 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const sectionNames: Record<string, string> = {
   nav: "Menu navigasi", guru: "Profil guru", topbar: "Bar kontak atas", header: "Kepala halaman", hero: "Bagian pembuka", stats: "Statistik",
   profil: "Profil / sambutan", layanan: "Layanan", berita: "Berita", prestasi: "Prestasi",
-  fasilitas: "Fasilitas", spmb: "Info SPMB", footer: "Bagian bawah",
+  susunan: "Susunan bagian halaman", custom: "Menu / bagian tambahan", fasilitas: "Fasilitas", spmb: "Info SPMB", footer: "Bagian bawah",
 };
 const fieldNames: Record<string, string> = {
   visible: "Tampilkan bagian ini", newsVisible: "Tampilkan kartu kabar", phone: "Telepon", email: "Email", hours: "Jam layanan",
   schoolName: "Nama sekolah", subtitle: "Keterangan", logo: "Logo sekolah", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
   description: "Deskripsi", primaryCta: "Tombol utama", secondaryCta: "Tombol kedua", newsTitle: "Judul kartu kabar", newsMonth: "Bulan",
   news: "Daftar kabar", items: "Daftar", value: "Angka", label: "Label", body: "Isi", name: "Nama", role: "Jabatan", copy: "Keterangan",
-  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat", mainBody: "Berita utama: isi lengkap", gallery: "Galeri foto", mainGallery: "Berita utama: galeri foto", buttonLabel: "Teks tombol", url: "Link tujuan tombol (https://...)",
+  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat", mainBody: "Berita utama: isi lengkap", gallery: "Galeri foto", mainGallery: "Berita utama: galeri foto", buttonLabel: "Teks tombol", url: "Link tujuan tombol (https://...)", coverImage: "Foto sampul layar utama", layout: "Tampilan profil guru", photoSize: "Ukuran foto guru", section: "Bagian (profil, guru, layanan, berita, prestasi, fasilitas, spmb, atau ID menu tambahan)", id: "ID bagian (tanpa spasi, mis. visi-misi; isi juga di Menu navigasi sebagai tujuan)",
 };
 
 type Val = unknown;
+const fieldOptions: Record<string, [string, string][]> = {
+  layout: [["grid", "Kartu (grid)"], ["kolase", "Kolase"], ["dropdown", "Dropdown (buka-tutup)"], ["geser", "Geser ke samping"]],
+  photoSize: [["kecil", "Kecil"], ["sedang", "Sedang"], ["besar", "Besar"]],
+};
 function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (v: Val) => void; def?: Val }) {
   const name = fieldNames[k] ?? k;
   const cls = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
   if (typeof value === "boolean")
     return <label className="flex items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--color-primary)]" />{name}</label>;
+  if (typeof value === "string" && fieldOptions[k])
+    return <label className="block text-xs font-semibold text-muted-foreground">{name}<select value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"}>{fieldOptions[k]!.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>;
   if (typeof value === "string" && /gallery$/i.test(k))
     return <GalleryField name={name} value={value} onChange={onChange} />;
   if (typeof value === "string" && /body$/i.test(k))
@@ -59,6 +65,8 @@ function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (
         {value.map((item, i) => <div key={i} className="rounded-md border border-border bg-muted/40 p-3">
           <Obj value={{ ...template, ...(item as Record<string, Val>) }} def={itemDef} onChange={(v) => onChange(value.map((x, j) => (j === i ? v : x)))} />
           <button type="button" onClick={() => { if (confirm("Hapus item ini?")) onChange(value.filter((_, j) => j !== i)); }} className="mt-2 text-xs font-semibold text-destructive">Hapus item</button>
+          {i > 0 && <button type="button" onClick={() => { const n = [...value]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; onChange(n); }} className="ml-4 mt-2 text-xs font-semibold text-primary">↑ Naikkan</button>}
+          {i < value.length - 1 && <button type="button" onClick={() => { const n = [...value]; [n[i + 1], n[i]] = [n[i], n[i + 1]]; onChange(n); }} className="ml-4 mt-2 text-xs font-semibold text-primary">↓ Turunkan</button>}
         </div>)}
         <button type="button" onClick={() => onChange([...value, template])} className="text-xs font-bold text-primary">+ Tambah item</button>
       </div></div>;
