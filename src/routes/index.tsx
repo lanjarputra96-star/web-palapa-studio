@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useState } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getSiteContent } from "@/lib/content.functions";
 import { ArrowRight, BookOpen, CalendarDays, ChevronRight, Clock3, Mail, MapPin, Menu, Phone, Trophy, Users, X } from "lucide-react";
@@ -42,7 +42,7 @@ function Index() {
   const guruLayout = c.guru.layout || "grid";
   const imgCls = ({ kecil: "aspect-square", besar: "aspect-[3/4]" } as Record<string, string>)[c.guru.photoSize] ?? "aspect-[4/5]";
   const guruGrid = guruLayout === "kolase" ? "mt-8 grid auto-rows-auto gap-4 grid-flow-dense sm:grid-cols-3 lg:grid-cols-4" : guruLayout === "geser" ? "mt-8 flex snap-x gap-5 overflow-x-auto pb-4 [&>*]:w-64 [&>*]:shrink-0 [&>*]:snap-start" : c.guru.photoSize === "besar" ? "mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" : c.guru.photoSize === "kecil" ? "mt-8 grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4";
-  const blocks: Record<string, React.ReactNode> = {
+  const blocks: Record<string, ReactNode> = {
         profil: c.profil.visible && (<section id="profil" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.profil.label}</p>
           <div className="mt-6 grid items-center gap-8 md:grid-cols-[300px_1fr] lg:gap-12">
