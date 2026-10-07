@@ -7,7 +7,9 @@ import { mediaGrid, photoClass, youtubeId, type PhotoSettings } from "@/lib/medi
 export function Photo({ src, alt, settings = {}, fallback = "aspect-[4/3]", className = "" }: { src: string; alt: string; settings?: PhotoSettings; fallback?: string; className?: string }) {
   const [open, setOpen] = useState(false);
   const img = <img src={src} alt={alt} loading="lazy" className={`${photoClass(settings, fallback)} rounded-md ${className}`} />;
-  const trigger = <Button variant="ghost" className="block h-auto w-full overflow-hidden p-0" aria-label={`Perbesar foto ${alt}`} onClick={() => setOpen(true)}>{img}</Button>;
+  const width = settings.photoSize === "kecil" ? "max-w-48" : settings.photoSize === "sedang" ? "max-w-md" : "max-w-full";
+  const align = settings.position === "kanan" ? "ml-auto" : settings.position === "kiri" ? "mr-auto" : "mx-auto";
+  const trigger = <Button variant="ghost" className={`block h-auto w-full overflow-hidden p-0 ${width} ${align}`} aria-label={`Perbesar foto ${alt}`} onClick={() => setOpen(true)}>{img}</Button>;
   return <>
     {settings.layout === "dropdown" ? <details><summary className="cursor-pointer py-2 text-sm font-semibold text-primary">{alt || "Foto"}</summary>{trigger}</details> : trigger}
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-w-5xl"><DialogTitle>{alt || "Foto"}</DialogTitle><img src={src} alt={alt} className="max-h-[75vh] w-full object-contain" /><a href={src} target="_blank" rel="noopener noreferrer" className="text-sm text-primary">Buka foto asli ↗</a></DialogContent></Dialog>
@@ -18,7 +20,7 @@ export function MediaCollection({ items, settings = {}, fallback, render }: { it
   return <div className={settings.layout === "dropdown" ? "space-y-3" : mediaGrid(settings, fallback)}>{items.map((item, i) => settings.layout === "dropdown" ? <details key={i} className="rounded-md border border-border bg-card p-4"><summary className="cursor-pointer font-semibold">{item.title || `Foto ${i + 1}`}</summary><div className="mt-4">{render(i)}</div></details> : <div key={i} className="min-w-0">{render(i)}</div>)}</div>;
 }
 
-export function PhotoGallery({ gallery = "", settings = {}, large = false }: { gallery?: string; settings?: PhotoSettings; large?: boolean }) {
+export function PhotoGallery({ gallery = "", settings = {}, large = false }: { gallery?: string | undefined; settings?: PhotoSettings | undefined; large?: boolean }) {
   const list = gallery.split("\n").map((x) => x.trim()).filter(Boolean);
   if (!list.length) return null;
   return <div className="mt-5"><MediaCollection items={list.map((_, i) => ({ title: `Foto ${i + 1}` }))} settings={settings} fallback={large ? "grid gap-3" : "grid grid-cols-3 gap-2"} render={(i) => <Photo src={list[i] ?? ""} alt={`Foto ${i + 1}`} settings={{ ...settings, layout: "" }} fallback={large ? "aspect-[4/3]" : "aspect-square"} />} /></div>;
