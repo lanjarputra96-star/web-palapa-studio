@@ -63,11 +63,19 @@ export const changePassword = createServerFn({ method: "POST" })
   });
 
 export const uploadImage = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ mime: z.string().regex(/^image\/[\w.+-]+$/), data: z.string().max(1_400_000) }).parse(d))
+  .inputValidator((d) => z.object({
+    mime: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]),
+    data: z.string().min(1).max(1_000_000).regex(/^[A-Za-z0-9+/]*={0,2}$/),
+    id: z.string().regex(/^\d+-[a-f0-9]{8}$/).optional(),
+    index: z.number().int().min(0).max(16), total: z.number().int().min(1).max(17),
+  }).parse(d))
   .handler(async ({ data }) => {
     await requireAdmin();
     await ensureTables();
-    const id = newImageId();
-    await d1Query("INSERT INTO site_images (id, mime, data) VALUES (?, ?, ?)", [id, data.mime, data.data]);
-    return { url: `/api/public/img/${id}` };
+    if (data.index >= data.total || (data.index > 0 && !data.id)) throw new Error("Unggahan tidak valid.");
+    const id = data.index === 0 ? newImageId() : data.id;
+    if (!id) throw new Error("Unggahan tidak valid.");
+    const mime = data.index === 0 && data.total > 1 ? `${data.mime};chunks=${data.total}` : data.mime;
+    await d1Query("INSERT INTO site_images (id, mime, data) VALUES (?, ?, ?)", [data.index === 0 ? id : `${id}_p${data.index}`, mime, data.data]);
+    return { id, url: `/api/public/img/${id}` };
   });

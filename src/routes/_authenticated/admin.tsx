@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { adminLogout, changePassword, getSiteContent, saveSiteContent, uploadImage as uploadImageFn } from "@/lib/content.functions";
 import { defaultContent, type SiteContent } from "@/lib/content";
+import { youtubeId } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -21,30 +22,35 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const sectionNames: Record<string, string> = {
-  nav: "Menu navigasi", guru: "Profil guru", topbar: "Bar kontak atas", header: "Kepala halaman", hero: "Bagian pembuka", stats: "Statistik",
+  galeri: "Galeri foto & video", nav: "Menu navigasi", guru: "Profil guru", topbar: "Bar kontak atas", header: "Kepala halaman", hero: "Bagian pembuka", stats: "Statistik",
   profil: "Profil / sambutan", layanan: "Layanan", berita: "Berita", prestasi: "Prestasi",
   susunan: "Susunan bagian halaman", custom: "Menu / bagian tambahan", fasilitas: "Fasilitas", spmb: "Info SPMB", footer: "Bagian bawah",
 };
 const fieldNames: Record<string, string> = {
+  photoSettings: "Pengaturan foto", gallerySettings: "Pengaturan galeri foto", mainPhotoSettings: "Berita utama: pengaturan foto", mainGallerySettings: "Berita utama: pengaturan galeri", logoSettings: "Pengaturan logo", coverSettings: "Pengaturan foto sampul", position: "Posisi foto", fit: "Bingkai foto", youtube: "Link YouTube", newTab: "Buka tautan di tab baru",
   visible: "Tampilkan bagian ini", newsVisible: "Tampilkan kartu kabar", phone: "Telepon", email: "Email", hours: "Jam layanan",
   schoolName: "Nama sekolah", subtitle: "Keterangan", logo: "Logo sekolah", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
   description: "Deskripsi", primaryCta: "Tombol utama", secondaryCta: "Tombol kedua", newsTitle: "Judul kartu kabar", newsMonth: "Bulan",
   news: "Daftar kabar", items: "Daftar", value: "Angka", label: "Label", body: "Isi", name: "Nama", role: "Jabatan", copy: "Keterangan",
-  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat", mainBody: "Berita utama: isi lengkap", gallery: "Galeri foto", mainGallery: "Berita utama: galeri foto", buttonLabel: "Teks tombol", url: "Link tujuan tombol (https://...)", coverImage: "Foto sampul layar utama", layout: "Tampilan profil guru", photoSize: "Ukuran foto guru", section: "Bagian (profil, guru, layanan, berita, prestasi, fasilitas, spmb, atau ID menu tambahan)", id: "ID bagian (tanpa spasi, mis. visi-misi; isi juga di Menu navigasi sebagai tujuan)",
+  date: "Tanggal", mainMeta: "Berita utama: tanggal", mainTitle: "Berita utama: judul", mainCopy: "Berita utama: ringkasan", cta: "Tombol", tagline: "Slogan", target: "Tujuan (id bagian)", image: "Foto", mainImage: "Berita utama: foto", bio: "Biografi singkat", mainBody: "Berita utama: isi lengkap", gallery: "Galeri foto", mainGallery: "Berita utama: galeri foto", buttonLabel: "Teks tombol", url: "Link tujuan tombol (https://...)", coverImage: "Foto sampul layar utama", layout: "Susunan foto", photoSize: "Ukuran foto", section: "Bagian (profil, guru, layanan, berita, prestasi, fasilitas, spmb, galeri, atau ID menu tambahan)", id: "ID bagian (tanpa spasi, mis. visi-misi; isi juga di Menu navigasi sebagai tujuan)",
 };
 
 type Val = unknown;
 const fieldOptions: Record<string, [string, string][]> = {
-  layout: [["grid", "Kartu (grid)"], ["kolase", "Kolase"], ["dropdown", "Dropdown (buka-tutup)"], ["geser", "Geser ke samping"]],
-  photoSize: [["kecil", "Kecil"], ["sedang", "Sedang"], ["besar", "Besar"]],
+  layout: [["", "Tampilan bawaan"], ["grid", "Kartu (grid)"], ["kolase", "Kolase"], ["dropdown", "Dropdown (buka-tutup)"], ["geser", "Geser ke samping"]],
+  photoSize: [["", "Ukuran bawaan"], ["kecil", "Kecil"], ["sedang", "Sedang"], ["besar", "Besar"], ["asli", "Proporsi asli"]],
+  position: [["", "Tengah"], ["atas", "Atas"], ["bawah", "Bawah"], ["kiri", "Kiri"], ["kanan", "Kanan"]],
+  fit: [["", "Bawaan"], ["contain", "Foto utuh (tanpa potong)"], ["cover", "Penuhi bingkai"]],
 };
 function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (v: Val) => void; def?: Val }) {
   const name = fieldNames[k] ?? k;
   const cls = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
   if (typeof value === "boolean")
     return <label className="flex items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--color-primary)]" />{name}</label>;
-  if (typeof value === "string" && fieldOptions[k])
-    return <label className="block text-xs font-semibold text-muted-foreground">{name}<select value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"}>{fieldOptions[k]!.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>;
+  const options = fieldOptions[k];
+  if (typeof value === "string" && options)
+    return <label className="block text-xs font-semibold text-muted-foreground">{name}<select value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"}>{options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>;
+  if (k === "youtube" && typeof value === "string") return <label className="block text-xs font-semibold text-muted-foreground">{name}<input type="url" value={value} onChange={(e) => onChange(e.target.value)} className={cls + " text-foreground"} />{value && !youtubeId(value) && <span className="mt-1 block text-destructive">Masukkan link YouTube yang valid.</span>}</label>;
   if (typeof value === "string" && /gallery$/i.test(k))
     return <GalleryField name={name} value={value} onChange={onChange} />;
   if (typeof value === "string" && /body$/i.test(k))
@@ -59,7 +65,8 @@ function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (
     const itemDef = (Array.isArray(def) ? def[0] : undefined) as Record<string, Val> | undefined;
     const keys = new Set<string>(Object.keys(itemDef ?? {}));
     value.forEach((it) => it && typeof it === "object" && Object.keys(it).forEach((x) => keys.add(x)));
-    const template = Object.fromEntries([...keys].map((x) => [x, typeof itemDef?.[x] === "boolean" ? false : ""]));
+    const empty = (v: Val): Val => v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([key, val]) => [key, empty(val)])) : typeof v === "boolean" ? v : "";
+    const template = Object.fromEntries([...keys].map((x) => [x, empty(itemDef?.[x])]));
     return <div><p className="text-xs font-semibold text-muted-foreground">{name}</p>
       <div className="mt-2 space-y-3">
         {value.map((item, i) => <div key={i} className="rounded-md border border-border bg-muted/40 p-3">
@@ -75,18 +82,26 @@ function Field({ k, value, onChange, def }: { k: string; value: Val; onChange: (
   return null;
 }
 async function toBase64(file: File): Promise<{ mime: string; data: string }> {
-  const bmp = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale);
-  canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-  const png = file.type === "image/png" && file.size < 300_000;
-  let q = 0.85, url = canvas.toDataURL(png ? "image/png" : "image/jpeg", q);
-  while (!png && url.length > 1_300_000 && q > 0.4) { q -= 0.15; url = canvas.toDataURL("image/jpeg", q); }
-  return { mime: png ? "image/png" : "image/jpeg", data: url.split(",")[1] ?? "" };
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"].includes(file.type)) throw new Error("Gunakan JPG, PNG, WebP, GIF, atau AVIF.");
+  if (file.size > 12 * 1024 * 1024) throw new Error("Ukuran foto maksimal 12 MB; kualitas asli dipertahankan.");
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Foto tidak dapat dibaca."));
+    reader.onload = () => resolve({ mime: file.type, data: String(reader.result).split(",")[1] ?? "" });
+    reader.readAsDataURL(file);
+  });
 }
 async function uploadImage(file: File) {
-  const { url } = await uploadImageFn({ data: await toBase64(file) });
+  const { mime, data } = await toBase64(file);
+  const chunkSize = 1_000_000;
+  const total = Math.ceil(data.length / chunkSize);
+  let id: string | undefined;
+  let url = "";
+  for (let index = 0; index < total; index++) {
+    const result = await uploadImageFn({ data: { mime, data: data.slice(index * chunkSize, (index + 1) * chunkSize), id, index, total } });
+    id = result.id;
+    url = result.url;
+  }
   return url;
 }
 function GalleryField({ name, value, onChange }: { name: string; value: string; onChange: (v: Val) => void }) {
