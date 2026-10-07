@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Photo, PhotoGallery, MediaCollection, VideoTile } from "@/components/site/media";
+import { photoClass, type PhotoSettings } from "@/lib/media";
 import { Fragment, useState, type ReactNode } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getSiteContent } from "@/lib/content.functions";
@@ -37,6 +39,7 @@ function Index() {
   const tel = "tel:" + c.topbar.phone.replace(/[^0-9+]/g, "");
   const prestasiImgs = [prestasiSains, prestasiSeni, literasiSekolah];
   const navItems = c.nav.items.map((n) => [n.label, "#" + n.target.replace(/^#/, "")] as const);
+  if (c.galeri.visible && c.galeri.items.some((item) => item.image || item.youtube) && !navItems.some(([, target]) => target === "#galeri")) navItems.push(["Galeri", "#galeri"]);
   const layananIcons = [BookOpen, Users, CalendarDays];
 
   const guruLayout = c.guru.layout || "grid";
@@ -46,7 +49,7 @@ function Index() {
         profil: c.profil.visible && (<section id="profil" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.profil.label}</p>
           <div className="mt-6 grid items-center gap-8 md:grid-cols-[300px_1fr] lg:gap-12">
-            <img src={c.profil.image || kepalaSekolah} alt="Ilustrasi Kepala SD Negeri 1 Palapa" loading="lazy" width={640} height={760} className="aspect-[4/5] w-full rounded-md object-cover shadow-soft" />
+            <Photo src={c.profil.image || kepalaSekolah} alt={c.profil.name} settings={c.profil.photoSettings} fallback="aspect-[4/5]" className="shadow-soft" />
             <div className="rounded-md border border-border bg-card p-7 sm:p-9">
               <h2 className="text-2xl font-bold">{c.profil.title}</h2>
               <p className="mt-4 leading-7 text-foreground/70 whitespace-pre-line">{c.profil.body}</p>
@@ -58,9 +61,9 @@ function Index() {
         guru: c.guru.visible && (<section id="guru" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.guru.label}</p><h2 className="mt-2 text-3xl font-bold">{c.guru.title}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{c.guru.description}</p>
-          {guruLayout === "dropdown" ? <GuruDropdown items={c.guru.items} imgCls={imgCls} /> : <div className={guruGrid}>
+          {guruLayout === "dropdown" ? <GuruDropdown items={c.guru.items} settings={c.guru} /> : <div className={guruGrid}>
             {c.guru.items.map((g, i) => <article key={i} className={"overflow-hidden  rounded-md border border-border bg-card transition-transform hover:-translate-y-1" + (guruLayout === "kolase" && i % 3 === 0 ? " sm:col-span-2 sm:row-span-2" : "")}>
-              {g.image ? <img src={g.image} alt={g.name} loading="lazy" className={imgCls + " w-full object-cover"} /> : <div className={imgCls + " grid w-full place-items-center bg-primary/10 font-display text-4xl font-bold text-primary"}>{g.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}</div>}
+              {g.image ? <Photo src={g.image} alt={g.name} settings={{ ...c.guru, layout: "" }} fallback={imgCls} /> : <div className={imgCls + " grid w-full place-items-center bg-primary/10 font-display text-4xl font-bold text-primary"}>{g.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}</div>}
               <div className="p-5"><h3 className="font-display text-base font-semibold">{g.name}</h3><p className="text-xs font-semibold text-primary">{g.role}</p>{g.bio && <p className="mt-2 text-sm leading-6 text-muted-foreground">{g.bio}</p>}</div>
             </article>)}
           </div>}
@@ -69,27 +72,34 @@ function Index() {
         layanan: c.layanan.visible && (<section id="layanan" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <div className="flex items-end justify-between"><div><p className="section-label">{c.layanan.label}</p><h2 className="mt-2 text-3xl font-bold">{c.layanan.title}</h2></div><button onClick={() => goTo("#kontak")} className="hidden text-sm font-bold text-primary sm:block">Hubungi sekolah <ArrowRight className="ml-1 inline size-4" /></button></div>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
-            {c.layanan.items.map(({title,copy,buttonLabel,url},i) => { const Icon = layananIcons[i % 3]!; return <article key={i} className="flex flex-col rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>{url && <a href={url} className={buttonVariants({ className: "mt-5 self-start" })} target="_blank" rel="noopener noreferrer">{buttonLabel || "Buka tautan"} <ArrowRight className="size-4" /></a>}</article>; })}
+            {c.layanan.items.map(({title,copy,buttonLabel,url,newTab},i) => { const Icon = layananIcons[i % 3] ?? BookOpen; return <article key={i} className="flex flex-col rounded-md border border-border bg-card p-7 transition-transform hover:-translate-y-1"><span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>{url && <a href={url} className={buttonVariants({ className: "mt-5 self-start" })} target={newTab === false ? "_self" : "_blank"} rel={newTab === false ? undefined : "noopener noreferrer"}>{buttonLabel || "Buka tautan"} <ArrowRight className="size-4" /></a>}</article>; })}
           </div>
         </section>),
 
         berita: c.berita.visible && (<section id="berita" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
           <p className="section-label">{c.berita.label}</p><h2 className="mt-2 text-3xl font-bold">{c.berita.title}</h2>
           <div className="mt-7 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-            <article className="overflow-hidden rounded-md border border-border bg-card"><img src={c.berita.mainImage || literasiSekolah} alt="Siswa membaca bersama di taman sekolah" loading="lazy" width={912} height={736} className="aspect-[16/9] w-full object-cover" /><div className="p-6"><p className="section-label">{c.berita.mainMeta}</p><h3 className="mt-2 text-xl font-semibold">{c.berita.mainTitle}</h3><p className="mt-2 text-sm text-muted-foreground">{c.berita.mainCopy}</p><NewsExtra body={c.berita.mainBody} gallery={c.berita.mainGallery} /></div></article>
-            <div className="grid gap-4">{c.berita.items.map(({date,title,body,gallery},i) => <article key={i} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3>{body || gallery ? <NewsExtra body={body} gallery={gallery} /> : <button onClick={() => goTo("#kontak")} className="mt-4 inline-flex items-center text-xs font-bold text-primary">Tanyakan ke sekolah <ChevronRight className="size-4" /></button>}</article>)}</div>
+            <article className="overflow-hidden rounded-md border border-border bg-card"><Photo src={c.berita.mainImage || literasiSekolah} alt={c.berita.mainTitle} settings={c.berita.mainPhotoSettings} fallback="aspect-[16/9]" /><div className="p-6"><p className="section-label">{c.berita.mainMeta}</p><h3 className="mt-2 text-xl font-semibold">{c.berita.mainTitle}</h3><p className="mt-2 text-sm text-muted-foreground">{c.berita.mainCopy}</p><NewsExtra body={c.berita.mainBody} gallery={c.berita.mainGallery} settings={c.berita.mainGallerySettings} /></div></article>
+            <div className="grid gap-4">{c.berita.items.map(({date,title,body,gallery,gallerySettings},i) => <article key={i} className="rounded-md border border-border bg-card p-5"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{date}</p><h3 className="mt-2 text-base font-semibold leading-6">{title}</h3>{body || gallery ? <NewsExtra body={body} gallery={gallery} settings={gallerySettings} /> : <button onClick={() => goTo("#kontak")} className="mt-4 inline-flex items-center text-xs font-bold text-primary">Tanyakan ke sekolah <ChevronRight className="size-4" /></button>}</article>)}</div>
           </div>
         </section>),
 
         prestasi: c.prestasi.visible && (<section id="prestasi" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 py-20 sm:px-6">
           <p className="section-label">{c.prestasi.label}</p><h2 className="mt-2 text-3xl font-bold">{c.prestasi.title}</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {c.prestasi.items.map((item,i) => <article key={i} className="overflow-hidden rounded-md border border-border bg-card"><img src={item.image || prestasiImgs[i % 3]!} alt={item.title} loading="lazy" width={912} height={736} className="aspect-[16/10] w-full object-cover" /><div className="p-5"><p className="section-label">{item.label}</p><h3 className="mt-2 text-base font-semibold">{item.title}</h3></div></article>)}
-          </div>
+          <div className="mt-8"><MediaCollection items={c.prestasi.items} settings={c.prestasi} fallback="grid gap-6 md:grid-cols-3" render={(i) => {
+            const item = c.prestasi.items[i];
+            if (!item) return null;
+            return <article className="overflow-hidden rounded-md border border-border bg-card"><Photo src={item.image || prestasiImgs[i % 3] || prestasiSains} alt={item.title} settings={{ ...c.prestasi, layout: "" }} fallback="aspect-[16/10]" /><div className="p-5"><p className="section-label">{item.label}</p><h3 className="mt-2 text-base font-semibold">{item.title}</h3>{item.copy && <p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted-foreground">{item.copy}</p>}</div></article>;
+          }} /></div>
         </section>),
 
-        fasilitas: c.fasilitas.visible && (<section id="fasilitas" className="scroll-mt-24 border-y border-border bg-card"><div className="mx-auto max-w-[1180px] px-5 py-16 sm:px-6"><p className="section-label">{c.fasilitas.label}</p><h2 className="mt-2 text-3xl font-bold">{c.fasilitas.title}</h2><div className="mt-8 grid gap-px overflow-hidden rounded-md bg-border sm:grid-cols-2 lg:grid-cols-4">{c.fasilitas.items.map(({title,copy,gallery},i) => <div key={i} className="bg-background p-6"><MapPin className="size-5 text-primary" /><h3 className="mt-5 text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p><Gallery gallery={gallery} large /></div>)}</div></div></section>),
+        fasilitas: c.fasilitas.visible && (<section id="fasilitas" className="scroll-mt-24 border-y border-border bg-card"><div className="mx-auto max-w-[1180px] px-5 py-16 sm:px-6"><p className="section-label">{c.fasilitas.label}</p><h2 className="mt-2 text-3xl font-bold">{c.fasilitas.title}</h2><div className="mt-8 grid gap-px overflow-hidden rounded-md bg-border sm:grid-cols-2 lg:grid-cols-4">{c.fasilitas.items.map(({title,copy,gallery,gallerySettings},i) => <div key={i} className="bg-background p-6"><MapPin className="size-5 text-primary" /><h3 className="mt-5 text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p><PhotoGallery gallery={gallery} settings={gallerySettings} large /></div>)}</div></div></section>),
 
+        galeri: c.galeri.visible && c.galeri.items.some((item) => item.image || item.youtube) && <section id="galeri" className="scroll-mt-24 mx-auto max-w-[1180px] px-5 py-20 sm:px-6"><p className="section-label">{c.galeri.label}</p><h2 className="mt-2 text-3xl font-bold">{c.galeri.title}</h2><div className="mt-8"><MediaCollection items={c.galeri.items.filter((item) => item.image || item.youtube)} settings={c.galeri} render={(i) => {
+          const item = c.galeri.items.filter((item) => item.image || item.youtube)[i];
+          if (!item) return null;
+          return <article className="overflow-hidden rounded-md border border-border bg-card">{item.youtube ? <VideoTile url={item.youtube} title={item.title} /> : <Photo src={item.image} alt={item.title || "Galeri sekolah"} settings={{ ...c.galeri, layout: "" }} />}{item.title && <h3 className="p-4 text-sm font-semibold">{item.title}</h3>}</article>;
+        }} /></div></section>,
   };
   for (const m of c.custom.items) if (m.id) blocks[m.id.replace(/^#/, "")] = m.visible && <CustomSection key={m.id} m={m} />;
   const order = c.susunan.items.map((x) => x.section.trim().replace(/^#/, "")).filter((k) => k in blocks);
@@ -110,7 +120,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1180px] items-center gap-8 px-5 py-3 sm:px-6">
           <button aria-label="Kembali ke atas" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3 text-left">
             {c.header.logo
-              ? <img src={c.header.logo} alt={`Logo ${c.header.schoolName}`} className="size-10 shrink-0 rounded-md object-contain" />
+              ? <img src={c.header.logo} alt={`Logo ${c.header.schoolName}`} className={(c.header.logoSettings.photoSize === "kecil" ? "size-8" : c.header.logoSettings.photoSize === "besar" ? "size-16" : "size-10") + " shrink-0 rounded-md object-contain"} />
               : <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary/10 font-display text-base font-extrabold text-primary ring-1 ring-primary/20">P1</span>}
             <span><strong className="block font-display text-sm sm:text-base">{c.header.schoolName}</strong><small className="block text-[10px] text-muted-foreground">{c.header.subtitle}</small></span>
           </button>
@@ -125,7 +135,7 @@ function Index() {
 
       <main>
         {c.hero.visible && <section className="hero-surface relative overflow-hidden pb-24 pt-14 text-primary-foreground sm:pt-20">
-          {c.header.coverImage && <img src={c.header.coverImage} alt="" className="absolute inset-0 size-full object-cover opacity-35" aria-hidden="true" />}
+          {c.header.coverImage && <img src={c.header.coverImage} alt="" className={photoClass(c.header.coverSettings, "h-full") + " absolute inset-0 opacity-35"} aria-hidden="true" />}
           <div className="absolute -right-20 -top-32 size-96 rounded-full bg-primary/25 blur-3xl" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1180px] gap-10 px-5 sm:px-6 lg:grid-cols-[1.06fr_.94fr] lg:items-center">
             <div>
@@ -184,36 +194,29 @@ function Index() {
   );
 }
 
-function Gallery({ gallery = "", large = false }: { gallery?: string | undefined; large?: boolean }) {
-  const list = (gallery ?? "").split("\n").filter(Boolean);
-  if (!list.length) return null;
-  if (large) return <div className="mt-5 grid gap-3">{list.map((u, i) => <a key={i} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-md object-cover" /></a>)}</div>;
-  return <div className="mt-4 grid grid-cols-3 gap-2">{list.map((u, i) => <a key={i} href={u} target="_blank" rel="noopener noreferrer"><img src={u} alt="" loading="lazy" className="aspect-square w-full rounded-md object-cover" /></a>)}</div>;
-}
-
-function NewsExtra({ body = "", gallery = "" }: { body?: string | undefined; gallery?: string | undefined }) {
+function NewsExtra({ body = "", gallery = "", settings }: { body?: string | undefined; gallery?: string | undefined; settings?: PhotoSettings }) {
   const [open, setOpen] = useState(false);
   if (!body && !gallery) return null;
   return <div>
     {open && <div className="mt-4 whitespace-pre-line text-sm leading-7 text-foreground">{body}</div>}
-    {open && <Gallery gallery={gallery} />}
+    {open && <PhotoGallery gallery={gallery} settings={settings} />}
     <button onClick={() => setOpen(!open)} className="mt-4 inline-flex items-center text-xs font-bold text-primary">{open ? "Tutup" : "Baca selengkapnya"} <ChevronRight className="size-4" /></button>
   </div>;
 }
 
-function GuruDropdown({ items, imgCls }: { items: { name: string; role: string; bio: string; image: string }[]; imgCls: string }) {
+function GuruDropdown({ items, settings }: { items: { name: string; role: string; bio: string; image: string }[]; settings: PhotoSettings }) {
   return <div className="mt-8 space-y-3">{items.map((g, i) => <details key={i} className="group rounded-md border border-border bg-card p-4">
     <summary className="flex cursor-pointer items-center gap-3"><span className="font-display font-semibold">{g.name}</span><span className="text-xs font-semibold text-primary">{g.role}</span><ChevronRight className="ml-auto size-4 transition-transform group-open:rotate-90" /></summary>
-    <div className="mt-4 grid gap-4 sm:grid-cols-[200px_1fr]">{g.image && <img src={g.image} alt={g.name} loading="lazy" className={imgCls + " w-full rounded-md object-cover"} />}<p className="text-sm leading-6 text-muted-foreground whitespace-pre-line">{g.bio}</p></div>
+    <div className="mt-4 grid gap-4 sm:grid-cols-[200px_1fr]">{g.image && <Photo src={g.image} alt={g.name} settings={{ ...settings, layout: "" }} fallback="aspect-[4/5]" />}<p className="text-sm leading-6 text-muted-foreground whitespace-pre-line">{g.bio}</p></div>
   </details>)}</div>;
 }
 
-function CustomSection({ m }: { m: { id: string; label: string; title: string; body: string; image: string; gallery: string } }) {
+function CustomSection({ m }: { m: { id: string; label: string; title: string; body: string; image: string; gallery: string; photoSettings: PhotoSettings; gallerySettings: PhotoSettings } }) {
   return <section id={m.id.replace(/^#/, "")} className="scroll-mt-24 mx-auto max-w-[1180px] px-5 pt-20 sm:px-6">
     {m.label && <p className="section-label">{m.label}</p>}<h2 className="mt-2 text-3xl font-bold">{m.title}</h2>
     <div className={"mt-7 grid gap-8" + (m.image ? " md:grid-cols-[1fr_1fr] md:items-start" : "")}>
-      {m.image && <img src={m.image} alt={m.title} loading="lazy" className="aspect-[4/3] w-full rounded-md object-cover shadow-soft" />}
-      <div className="rounded-md border border-border bg-card p-7"><p className="whitespace-pre-line leading-7 text-foreground/75">{m.body}</p><Gallery gallery={m.gallery} /></div>
+      {m.image && <Photo src={m.image} alt={m.title} settings={m.photoSettings} className="shadow-soft" />}
+      <div className="rounded-md border border-border bg-card p-7"><p className="whitespace-pre-line leading-7 text-foreground/75">{m.body}</p><PhotoGallery gallery={m.gallery} settings={m.gallerySettings} /></div>
     </div>
   </section>;
 }

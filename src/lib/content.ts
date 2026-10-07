@@ -1,3 +1,5 @@
+export const photoSettings = { layout: "", photoSize: "", position: "", fit: "" };
+
 export const defaultContent = {
   topbar: { visible: true, phone: "(021) 7889-4211", email: "SDN1Palapa@yahoo.co.id", hours: "Senin–Jumat, 07.00–15.00 WIB" },
   nav: {
@@ -11,7 +13,7 @@ export const defaultContent = {
       { label: "Kontak", target: "kontak" },
     ],
   },
-  header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", logo: "", coverImage: "", ctaLabel: "Info SPMB" },
+  header: { schoolName: "SD Negeri 1 Palapa", subtitle: "NPSN 10807499 · Akreditasi B", logo: "", coverImage: "", logoSettings: { ...photoSettings }, coverSettings: { ...photoSettings }, ctaLabel: "Info SPMB" },
   hero: {
     visible: true,
     badge: "Membangun generasi Berhatti",
@@ -46,6 +48,7 @@ export const defaultContent = {
     name: "Taufik Hidayat, S.Pd.",
     role: "Kepala Sekolah",
     image: "",
+    photoSettings: { ...photoSettings },
   },
   guru: {
     visible: true,
@@ -54,6 +57,7 @@ export const defaultContent = {
     description: "Kenali para pendidik yang membimbing siswa SD Negeri 1 Palapa setiap hari.",
     layout: "grid",
     photoSize: "sedang",
+    position: "", fit: "",
     items: [{ name: "Taufik Hidayat, S.Pd.", role: "Kepala Sekolah", bio: "", image: "" }],
   },
   layanan: {
@@ -61,7 +65,7 @@ export const defaultContent = {
     label: "Akses cepat",
     title: "Layanan & referensi",
     items: [
-      { title: "Referensi Belajar", copy: "Tautan materi dan sumber belajar untuk mendukung kegiatan siswa.", buttonLabel: "", url: "" },
+      { title: "Referensi Belajar", copy: "Tautan materi dan sumber belajar untuk mendukung kegiatan siswa.", buttonLabel: "", url: "", newTab: true },
       { title: "Informasi Pendidik", copy: "Kenali tenaga pendidik dan kependidikan SD Negeri 1 Palapa." },
       { title: "Kalender Sekolah", copy: "Ikuti jadwal kegiatan akademik dan agenda penting sekolah." },
     ],
@@ -76,8 +80,10 @@ export const defaultContent = {
     mainImage: "",
     mainBody: "",
     mainGallery: "",
+    mainPhotoSettings: { ...photoSettings },
+    mainGallerySettings: { ...photoSettings },
     items: [
-      { date: "09 September 2026", title: "Evaluasi Perpanjangan KBM Daring hingga 10 September 2026", body: "", gallery: "" },
+      { date: "09 September 2026", title: "Evaluasi Perpanjangan KBM Daring hingga 10 September 2026", body: "", gallery: "", gallerySettings: { ...photoSettings } },
       { date: "07 September 2026", title: "Aktivitas Vulkanik Krakatau Berdampak pada Kegiatan Pembelajaran" },
       { date: "09 September 2026", title: "Pembelajaran Daring Dampak Abu Vulkanik Gunung Anak Krakatau" },
     ],
@@ -86,10 +92,11 @@ export const defaultContent = {
     visible: true,
     label: "Rekam jejak prestasi",
     title: "Ruang tumbuh, karya, dan pencapaian",
+    layout: "", photoSize: "", position: "", fit: "",
     items: [
-      { label: "Akademik", title: "Semangat berprestasi di bidang sains", image: "" },
-      { label: "Seni & budaya", title: "Merawat budaya melalui karya siswa", image: "" },
-      { label: "Literasi", title: "Membangun kebiasaan membaca bersama", image: "" },
+      { label: "Akademik", title: "Semangat berprestasi di bidang sains", image: "", copy: "" },
+      { label: "Seni & budaya", title: "Merawat budaya melalui karya siswa", image: "", copy: "" },
+      { label: "Literasi", title: "Membangun kebiasaan membaca bersama", image: "", copy: "" },
     ],
   },
   fasilitas: {
@@ -97,11 +104,15 @@ export const defaultContent = {
     label: "Sarana & prasarana",
     title: "Fasilitas pendukung pembelajaran",
     items: [
-      { title: "Ruang kelas", copy: "Ruang belajar yang nyaman", gallery: "" },
+      { title: "Ruang kelas", copy: "Ruang belajar yang nyaman", gallery: "", gallerySettings: { ...photoSettings } },
       { title: "Perpustakaan", copy: "Kunjungan siswa aktif terjadwal" },
       { title: "Lapangan olahraga", copy: "Basket, futsal, badminton, dan voli" },
       { title: "Musholah", copy: "Pusat ibadah dan kegiatan keagamaan" },
     ],
+  },
+  galeri: {
+    visible: true, label: "Galeri", title: "Galeri sekolah", layout: "grid", photoSize: "sedang", position: "", fit: "",
+    items: [{ title: "", image: "", youtube: "" }],
   },
   spmb: {
     visible: true,
@@ -111,10 +122,10 @@ export const defaultContent = {
     cta: "Hubungi Sekolah",
   },
   susunan: {
-    items: ["profil", "guru", "layanan", "berita", "prestasi", "fasilitas", "spmb"].map((section) => ({ section })),
+    items: ["profil", "guru", "layanan", "berita", "prestasi", "fasilitas", "galeri", "spmb"].map((section) => ({ section })),
   },
   custom: {
-    items: [{ visible: false, id: "visi-misi", label: "Tentang kami", title: "Visi & Misi", body: "", image: "", gallery: "" }],
+    items: [{ visible: false, id: "visi-misi", label: "Tentang kami", title: "Visi & Misi", body: "", image: "", gallery: "", photoSettings: { ...photoSettings }, gallerySettings: { ...photoSettings } }],
   },
   footer: { visible: true, tagline: "Beriman, sehat, dan berprestasi — bersama membangun generasi masa depan." },
 };
@@ -125,14 +136,15 @@ type Json = unknown;
 function merge(base: Json, over: Json): Json {
   if (Array.isArray(base)) {
     if (!Array.isArray(over)) return base;
-    const tpl = base[0];
-    return tpl && typeof tpl === "object" ? over.map((x) => merge(Object.fromEntries(Object.keys(tpl).map((k) => [k, typeof (tpl as Record<string, Json>)[k] === "boolean" ? false : ""])), x)) : over;
+    const templates = base.filter((x) => x && typeof x === "object");
+    const tpl = Object.assign({}, ...templates) as Record<string, Json>;
+    const empty = (v: Json): Json => v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, empty(x)])) : typeof v === "boolean" ? v : "";
+    return templates.length ? over.map((x) => merge(empty(tpl), x)) : over;
   }
   if (base && typeof base === "object") {
-    const out: Record<string, Json> = { ...(base as Record<string, Json>) };
-    if (over && typeof over === "object" && !Array.isArray(over)) {
-      for (const k of Object.keys(out)) out[k] = merge(out[k], (over as Record<string, Json>)[k]);
-    }
+    const stored = over && typeof over === "object" && !Array.isArray(over) ? over as Record<string, Json> : {};
+    const out: Record<string, Json> = { ...stored, ...(base as Record<string, Json>) };
+    for (const k of Object.keys(base)) out[k] = merge((base as Record<string, Json>)[k], stored[k]);
     return out;
   }
   return typeof over === typeof base ? over : base;
