@@ -122,12 +122,13 @@ export const defaultContent = {
     cta: "Hubungi Sekolah",
   },
   susunan: {
-    items: ["profil", "guru", "layanan", "berita", "prestasi", "fasilitas", "galeri", "spmb"].map((section) => ({ section })),
+    items: ["profil", "guru", "layanan", "berita", "prestasi", "fasilitas", "galeri"].map((section) => ({ section, visible: true })),
   },
   custom: {
     items: [{ visible: false, id: "visi-misi", label: "Tentang kami", title: "Visi & Misi", body: "", image: "", gallery: "", photoSettings: { ...photoSettings }, gallerySettings: { ...photoSettings } }],
   },
   footer: { visible: true, tagline: "Beriman, sehat, dan berprestasi — bersama membangun generasi masa depan." },
+  peta: { visible: true, title: "Lokasi sekolah", address: "SD Negeri 1 Palapa" },
 };
 
 export type SiteContent = typeof defaultContent;

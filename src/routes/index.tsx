@@ -102,8 +102,9 @@ function Index() {
         }} /></div></section>,
   };
   for (const m of c.custom.items) if (m.id) blocks[m.id.replace(/^#/, "")] = m.visible && <CustomSection key={m.id} m={m} />;
-  const order = c.susunan.items.map((x) => x.section.trim().replace(/^#/, "")).filter((k) => k in blocks);
-  for (const k of Object.keys(blocks)) if (!order.includes(k)) order.push(k);
+  const susun = c.susunan.items.map((x) => ({ k: x.section.trim().replace(/^#/, ""), on: (x as { visible?: boolean }).visible !== false }));
+  const order = susun.filter((x) => x.on && x.k in blocks).map((x) => x.k);
+  for (const k of Object.keys(blocks)) if (!susun.some((x) => x.k === k)) order.push(k);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-primary/20">
@@ -188,6 +189,7 @@ function Index() {
             </ul>
           </div>
         </div>
+        {c.peta.visible && c.peta.address && <div className="mx-auto max-w-[1180px] px-5 pb-12 sm:px-6"><p className="section-label">{c.peta.title}</p><p className="mt-2 text-sm text-muted-foreground">{c.peta.address}</p><iframe title={c.peta.title || "Peta lokasi sekolah"} src={`https://www.google.com/maps?q=${encodeURIComponent(c.peta.address)}&output=embed`} className="mt-4 h-80 w-full rounded-md border border-border" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /></div>}
         <div className="border-t border-border"><p className="mx-auto max-w-[1180px] px-5 py-5 text-xs text-muted-foreground sm:px-6">© {new Date().getFullYear()} {c.header.schoolName}. Seluruh hak dilindungi. · <a href="/auth" className="hover:text-primary">Login Admin</a></p></div>
       </footer>}
     </div>
