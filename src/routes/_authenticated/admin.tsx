@@ -24,11 +24,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const sectionNames: Record<string, string> = {
   galeri: "Galeri foto & video", nav: "Menu navigasi", guru: "Profil guru", topbar: "Bar kontak atas", header: "Kepala halaman", hero: "Bagian pembuka", stats: "Statistik",
   profil: "Profil / sambutan", layanan: "Layanan", berita: "Berita", prestasi: "Prestasi",
-  susunan: "Susunan bagian halaman", custom: "Menu / bagian tambahan", fasilitas: "Fasilitas", spmb: "Info SPMB", footer: "Bagian bawah",
+  susunan: "Susunan bagian halaman", custom: "Menu / bagian tambahan", fasilitas: "Fasilitas", spmb: "Info SPMB", footer: "Bagian bawah", peta: "Peta Google Maps (bagian bawah)",
 };
 const fieldNames: Record<string, string> = {
-  photoSettings: "Pengaturan foto", gallerySettings: "Pengaturan galeri foto", mainPhotoSettings: "Berita utama: pengaturan foto", mainGallerySettings: "Berita utama: pengaturan galeri", logoSettings: "Pengaturan logo", coverSettings: "Pengaturan foto sampul", position: "Posisi foto", fit: "Bingkai foto", youtube: "Link YouTube", newTab: "Buka tautan di tab baru",
-  visible: "Tampilkan bagian ini", newsVisible: "Tampilkan kartu kabar", phone: "Telepon", email: "Email", hours: "Jam layanan",
+  address: "Alamat sekolah untuk peta", photoSettings: "Pengaturan foto", gallerySettings: "Pengaturan galeri foto", mainPhotoSettings: "Berita utama: pengaturan foto", mainGallerySettings: "Berita utama: pengaturan galeri", logoSettings: "Pengaturan logo", coverSettings: "Pengaturan foto sampul", position: "Posisi foto", fit: "Bingkai foto", youtube: "Link YouTube", newTab: "Buka tautan di tab baru",
+  visible: "Tampilkan / aktifkan", newsVisible: "Tampilkan kartu kabar", phone: "Telepon", email: "Email", hours: "Jam layanan",
   schoolName: "Nama sekolah", subtitle: "Keterangan", logo: "Logo sekolah", ctaLabel: "Tombol", badge: "Label kecil", title: "Judul", highlight: "Judul (berwarna)",
   description: "Deskripsi", primaryCta: "Tombol utama", secondaryCta: "Tombol kedua", newsTitle: "Judul kartu kabar", newsMonth: "Bulan",
   news: "Daftar kabar", items: "Daftar", value: "Angka", label: "Label", body: "Isi", name: "Nama", role: "Jabatan", copy: "Keterangan",
@@ -36,6 +36,15 @@ const fieldNames: Record<string, string> = {
 };
 
 type Val = unknown;
+const builtinSections = ["profil", "guru", "layanan", "berita", "prestasi", "fasilitas", "galeri"];
+function syncSusunan(c: SiteContent): SiteContent {
+  const norm = (v: string) => (v || "").trim().replace(/^#/, "");
+  const customIds = c.custom.items.map((m) => norm(m.id)).filter(Boolean);
+  const valid = [...builtinSections, ...customIds];
+  const items = (c.susunan.items as { section: string; visible?: boolean }[]).filter((x) => valid.includes(norm(x.section)) || x.section === "spmb");
+  for (const k of valid) if (!items.some((x) => norm(x.section) === k)) items.push({ section: k, visible: true });
+  return { ...c, susunan: { ...c.susunan, items: items.map((x) => ({ ...x, visible: x.visible !== false })) } } as SiteContent;
+}
 const fieldOptions: Record<string, [string, string][]> = {
   layout: [["", "Tampilan bawaan"], ["grid", "Kartu (grid)"], ["kolase", "Kolase"], ["dropdown", "Dropdown (buka-tutup)"], ["geser", "Geser ke samping"]],
   photoSize: [["", "Ukuran bawaan"], ["kecil", "Kecil"], ["sedang", "Sedang"], ["besar", "Besar"], ["asli", "Proporsi asli"]],
@@ -180,7 +189,7 @@ function AdminPage() {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    setAdmin(true); load().then(setContent);
+    setAdmin(true); load().then((c) => setContent(syncSusunan(c)));
   }, []);
 
   const signOut = async () => { await logout(); navigate({ to: "/auth", replace: true }); };
@@ -212,7 +221,7 @@ function AdminPage() {
               {sectionNames[key] ?? key}
               {"visible" in (section as object) && !(section as { visible: boolean }).visible && <span className="ml-2 text-xs font-normal text-muted-foreground">(disembunyikan)</span>}
             </summary>
-            <div className="mt-4"><Obj value={section as Record<string, Val>} def={(defaultContent as unknown as Record<string, Val>)[key]} onChange={(v) => { setContent({ ...content, [key]: v }); setStatus("Belum disimpan"); }} /></div>
+            <div className="mt-4"><Obj value={section as Record<string, Val>} def={(defaultContent as unknown as Record<string, Val>)[key]} onChange={(v) => { setContent(syncSusunan({ ...content, [key]: v } as SiteContent)); setStatus("Belum disimpan"); }} /></div>
           </details>
         ))}
       </main>
